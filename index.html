@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Керемет талаасы - Поле чудес</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        const KyrgyzWheelGame = () => {
+            const [gameState, setGameState] = useState('menu');
+            const [currentWord, setCurrentWord] = useState(null);
+            const [guessedLetters, setGuessedLetters] = useState([]);
+            const [score, setScore] = useState(0);
+            const [round, setRound] = useState(1);
+            const [spinning, setSpinning] = useState(false);
+            const [wheelValue, setWheelValue] = useState(0);
+            const [message, setMessage] = useState('');
+            const [lives, setLives] = useState(3);
+
+            const words = [
+                { word: "ЮРТА", hint: "Традиционное жилище кочевников", category: "Жилище" },
+                { word: "КОМУЗ", hint: "Трехструнный музыкальный инструмент", category: "Музыка" },
+                { word: "МАНАС", hint: "Героический эпос кыргызского народа", category: "Эпос" },
+                { word: "КАЛПАК", hint: "Традиционный головной убор", category: "Одежда" },
+                { word: "КУМЫС", hint: "Напиток из кобыльего молока", category: "Еда" },
+                { word: "БЕШБАРМАК", hint: "Праздничное блюдо из мяса и теста", category: "Еда" },
+                { word: "КОКБОРУ", hint: "Национальная конная игра", category: "Спорт" },
+                { word: "АЙЧУРОК", hint: "Кыргызское женское имя", category: "Имена" },
+                { word: "ИССЫККУЛЬ", hint: "Высокогорное озеро", category: "Природа" },
+                { word: "КАНЫКЕЙ", hint: "Жена героя Манаса", category: "Эпос" },
+                { word: "БИШКЕК", hint: "Столица Кыргызстана", category: "География" },
+                { word: "ТУШОО", hint: "Обряд первых шагов ребенка", category: "Традиции" },
+                { word: "ОРОЗО", hint: "Священный месяц поста", category: "Религия" },
+                { word: "КУРУТ", hint: "Сушеный соленый сыр", category: "Еда" },
+                { word: "БООРСОК", hint: "Жареное тесто к чаю", category: "Еда" }
+            ];
+
+            const wheelSegments = [100, 200, 300, 500, 0, 150, 250, 400, 600, 0, 350, 450];
+
+            const keyboard = [
+                ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З'],
+                ['И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'Ө', 'П'],
+                ['Р', 'С', 'Т', 'У', 'Ү', 'Ф', 'Х', 'Ц', 'Ч'],
+                ['Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я', 'Ң']
+            ];
+
+            const canvasRef = useRef(null);
+
+            useEffect(() => {
+                if (canvasRef.current) {
+                    drawWheel(0);
+                }
+            }, []);
+
+            const drawWheel = (rotation) => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const centerX = 150;
+                const centerY = 150;
+                const radius = 140;
+                const segmentAngle = (2 * Math.PI) / wheelSegments.length;
+
+                ctx.clearRect(0, 0, 300, 300);
+
+                wheelSegments.forEach((value, i) => {
+                    const startAngle = i * segmentAngle + rotation;
+                    const endAngle = startAngle + segmentAngle;
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.closePath();
+
+                    if (value === 0) {
+                        ctx.fillStyle = '#1f2937';
+                    } else {
+                        ctx.fillStyle = i % 2 === 0 ? '#dc2626' : '#fbbf24';
+                    }
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(startAngle + segmentAngle / 2);
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.fillText(value === 0 ? '💀' : value, radius * 0.7, 5);
+                    ctx.restore();
+                });
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY - radius - 20);
+                ctx.lineTo(centerX - 15, centerY - radius);
+                ctx.lineTo(centerX + 15, centerY - radius);
+                ctx.closePath();
+                ctx.fillStyle = '#ef4444';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            };
+
+            const spinWheel = () => {
+                if (spinning) return;
+
+                setSpinning(true);
+                setMessage('Крутим барабан...');
+
+                const spins = 5 + Math.random() * 3;
+                const finalRotation = spins * 2 * Math.PI;
+                const duration = 3000;
+                const startTime = Date.now();
+
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const currentRotation = finalRotation * easeOut;
+
+                    drawWheel(currentRotation);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        const segmentAngle = (2 * Math.PI) / wheelSegments.length;
+                        const normalizedRotation = (finalRotation % (2 * Math.PI));
+                        const selectedIndex = Math.floor((2 * Math.PI - normalizedRotation + Math.PI / 2) / segmentAngle) % wheelSegments.length;
+                        const value = wheelSegments[selectedIndex];
+
+                        setWheelValue(value);
+                        setSpinning(false);
+
+                        if (value === 0) {
+                            setMessage('💀 Банкрот! Вы потеряли ход');
+                            setTimeout(() => {
+                                const newLives = lives - 1;
+                                setLives(newLives);
+                                if (newLives === 0) {
+                                    setGameState('gameover');
+                                } else {
+                                    setMessage(`Выберите букву. Очки за букву: ${value}`);
+                                }
+                            }, 2000);
+                        } else {
+                            setMessage(`Выпало ${value} очков! Выберите букву`);
+                        }
+                    }
+                };
+
+                animate();
+            };
+
+            const startGame = () => {
+                const randomWord = words[Math.floor(Math.random() * words.length)];
+                setCurrentWord(randomWord);
+                setGuessedLetters([]);
+                setScore(0);
+                setRound(1);
+                setLives(3);
+                setWheelValue(0);
+                setMessage('Крутите барабан!');
+                setGameState('playing');
+            };
+
+            const guessLetter = (letter) => {
+                if (guessedLetters.includes(letter) || spinning || wheelValue === 0) return;
+
+                const newGuessed = [...guessedLetters, letter];
+                setGuessedLetters(newGuessed);
+
+                if (currentWord.word.includes(letter)) {
+                    const count = currentWord.word.split('').filter(l => l === letter).length;
+                    const points = wheelValue * count;
+                    setScore(score + points);
+                    setMessage(`✅ Правильно! +${points} очков`);
+
+                    const isComplete = currentWord.word.split('').every(l => newGuessed.includes(l));
+                    if (isComplete) {
+                        setTimeout(() => {
+                            if (round < 3) {
+                                setRound(round + 1);
+                                const newWord = words[Math.floor(Math.random() * words.length)];
+                                setCurrentWord(newWord);
+                                setGuessedLetters([]);
+                                setWheelValue(0);
+                                setMessage('🎉 Слово угадано! Следующий раунд!');
+                            } else {
+                                setGameState('win');
+                            }
+                        }, 2000);
+                    } else {
+                        setWheelValue(0);
+                        setTimeout(() => setMessage('Крутите барабан!'), 2000);
+                    }
+                } else {
+                    setMessage('❌ Нет такой буквы!');
+                    const newLives = lives - 1;
+                    setLives(newLives);
+                    setWheelValue(0);
+                    setTimeout(() => {
+                        if (newLives === 0) {
+                            setGameState('gameover');
+                        } else {
+                            setMessage('Крутите барабан!');
+                        }
+                    }, 2000);
+                }
+            };
+
+            if (gameState === 'menu') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-red-600 via-yellow-500 to-blue-600 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                            <div className="text-6xl mb-4">🎡</div>
+                            <h1 className="text-4xl font-bold text-gray-800 mb-2">Бакыт Дөңгөлөк</h1>
+                            
+                            <div className="bg-blue-50 rounded-xl p-6 mb-8 text-left">
+                                <h3 className="font-bold text-lg mb-3 text-blue-800">Правила игры:</h3>
+                                <ul className="space-y-2 text-gray-700">
+                                    <li>🎯 Угадывайте кыргызские слова по буквам</li>
+                                    <li>🎡 Крутите барабан для получения очков</li>
+                                    <li>💀 Избегайте сектора "Банкрот"</li>
+                                    <li>❤️ У вас есть 3 жизни</li>
+                                    <li>🏆 Пройдите 3 раунда для победы</li>
+                                </ul>
+                            </div>
+
+                            <button
+                                onClick={startGame}
+                                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition transform shadow-lg"
+                            >
+                                🎮 Начать игру! 🎮
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (gameState === 'gameover') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-gray-800 to-red-900 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                            <div className="text-6xl mb-4">💔</div>
+                            <h1 className="text-4xl font-bold text-red-600 mb-4">Игра окончена</h1>
+                            <p className="text-xl text-gray-700 mb-6">
+                                Правильное слово было: <span className="font-bold text-red-600">{currentWord?.word}</span>
+                            </p>
+                            
+                            <div className="bg-gray-100 rounded-xl p-6 mb-6">
+                                <div className="text-5xl font-bold text-gray-800">{score}</div>
+                                <div className="text-gray-600">Очков набрано</div>
+                                <div className="text-gray-500 mt-2">Раунд {round} из 3</div>
+                            </div>
+
+                            <button
+                                onClick={startGame}
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition transform shadow-lg"
+                            >
+                                🔄 Играть снова 🔄
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (gameState === 'win') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-green-500 to-blue-500 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                            <div className="text-6xl mb-4">🎉</div>
+                            <h1 className="text-4xl font-bold text-green-600 mb-4">Победа!</h1>
+                            <p className="text-xl text-gray-700 mb-6">Вы прошли все 3 раунда!</p>
+                            
+                            <div className="bg-gradient-to-br from-yellow-100 to-green-100 rounded-xl p-6 mb-6">
+                                <div className="text-5xl font-bold text-green-700">{score}</div>
+                                <div className="text-gray-700 font-semibold">Итоговый счет</div>
+                            </div>
+
+                            <button
+                                onClick={startGame}
+                                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition transform shadow-lg"
+                            >
+                                🔄 Играть снова 🔄
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 p-4">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-white rounded-3xl shadow-2xl p-6 mb-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex gap-2">
+                                    {[...Array(3)].map((_, i) => (
+                                        <span key={i} className={`text-3xl ${i < lives ? 'opacity-100' : 'opacity-20'}`}>
+                                            ❤️
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-sm text-gray-600">Раунд</div>
+                                    <div className="text-2xl font-bold text-blue-600">{round} / 3</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-3xl font-bold text-yellow-600">{score}</div>
+                                    <div className="text-sm text-gray-600">очков</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-4 mb-4">
+                                <div className="text-center mb-2">
+                                    <span className="text-sm font-semibold text-gray-700">Категория: </span>
+                                    <span className="text-lg font-bold text-blue-700">{currentWord?.category}</span>
+                                </div>
+                                <div className="text-center text-gray-700">
+                                    💡 {currentWord?.hint}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-center gap-2 mb-6 flex-wrap">
+                                {currentWord?.word.split('').map((letter, index) => (
+                                    <div key={index} className="w-12 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg border-4 border-white">
+                                        <span className="text-2xl font-bold text-white">
+                                            {guessedLetters.includes(letter) ? letter : '?'}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col items-center gap-4 mb-6">
+                                <canvas ref={canvasRef} width="300" height="300" className="rounded-xl shadow-lg"></canvas>
+                                <button
+                                    onClick={spinWheel}
+                                    disabled={spinning || wheelValue !== 0}
+                                    className={`px-8 py-4 rounded-full text-xl font-bold transition transform ${
+                                        spinning || wheelValue !== 0
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-gradient-to-r from-green-500 to-blue-500 hover:scale-105 shadow-lg'
+                                    } text-white`}
+                                >
+                                    {spinning ? '🎡 Крутится...' : 'Крутить барабан!'}
+                                </button>
+                                <div className="text-center text-xl font-bold text-white bg-blue-600 px-6 py-3 rounded-full shadow-lg">
+                                    {message}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                {keyboard.map((row, rowIndex) => (
+                                    <div key={rowIndex} className="flex justify-center gap-1 flex-wrap">
+                                        {row.map((letter) => {
+                                            const isGuessed = guessedLetters.includes(letter);
+                                            const isInWord = currentWord?.word.includes(letter);
+                                            return (
+                                                <button
+                                                    key={letter}
+                                                    onClick={() => guessLetter(letter)}
+                                                    disabled={isGuessed || wheelValue === 0 || spinning}
+                                                    className={`w-10 h-10 rounded-lg font-bold transition transform hover:scale-110 ${
+                                                        isGuessed
+                                                            ? isInWord
+                                                                ? 'bg-green-500 text-white'
+                                                                : 'bg-red-500 text-white'
+                                                            : wheelValue === 0 || spinning
+                                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                            : 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    }`}
+                                                >
+                                                    {letter}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<KyrgyzWheelGame />, document.getElementById('root'));
+    </script>
+</body>
+</html>
