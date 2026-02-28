@@ -13,6 +13,45 @@
         body { font-family: 'Montserrat', sans-serif; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .animate-modal { animation: fadeIn 0.2s ease-out forwards; }
+
+        /* Loading screen animations */
+        @keyframes spinWheel {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 0 60px rgba(251, 191, 36, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.8), 0 0 100px rgba(251, 191, 36, 0.3); }
+        }
+        @keyframes progressBar {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes letterPop {
+            0% { opacity: 0; transform: scale(0) rotate(-10deg); }
+            70% { transform: scale(1.15) rotate(3deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.7); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; pointer-events: none; }
+        }
+
+        .spin-wheel { animation: spinWheel 4s cubic-bezier(0.2, 0.8, 0.5, 1) forwards; }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .progress-bar { animation: progressBar 3s ease-in-out forwards; }
+        .float-up { animation: floatUp 0.6s ease-out forwards; }
+        .letter-pop { animation: letterPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .star-twinkle { animation: starTwinkle ease-in-out infinite; }
+        .fade-out { animation: fadeOut 0.8s ease-out forwards; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -64,6 +103,13 @@
         const translations = {
             kg: {
                 title: "КЕРЕМЕТ ТАЛААСЫ",
+                loading: "Жүктөлүүдө...",
+                loadingTips: [
+                    "Барабанды айлантып упай чогулт!",
+                    "Банкроттон сак бол!",
+                    "Тамгаларды туура тандагыла!",
+                    "Кыргызча сөздөрдү билесиңби?",
+                ],
                 rulesTitle: "Оюндун эрежелери:",
                 rules: ["🎯 Сөздөрдү тамгалап тапкыла", "🎡 Упай алуу үчүн барабанды айланткыла", "💀 'Банкрот' секторунан сак болгула", "❤️ Сизде 3 мүмкүнчүлүк бар"],
                 startBtn: "Оюнду баштоо",
@@ -90,6 +136,13 @@
             },
             ru: {
                 title: "ПОЛЕ ЧУДЕС",
+                loading: "Загрузка...",
+                loadingTips: [
+                    "Крути барабан и набирай очки!",
+                    "Избегай сектора Банкрот!",
+                    "Угадывай буквы правильно!",
+                    "Знаешь ли ты кыргызские слова?",
+                ],
                 rulesTitle: "Правила игры:",
                 rules: ["🎯 Угадывайте слова по буквам", "🎡 Крутите барабан для получения очков", "💀 Избегайте сектора 'Банкрот'", "❤️ У вас есть 3 попытки"],
                 startBtn: "Начать игру",
@@ -116,8 +169,164 @@
             }
         };
 
+        // --- LOADING SCREEN ---
+        const LoadingScreen = ({ lang, onDone }) => {
+            const [progress, setProgress] = useState(0);
+            const [tipIndex, setTipIndex] = useState(0);
+            const [fadingOut, setFadingOut] = useState(false);
+            const t = translations[lang];
+
+            useEffect(() => {
+                // Progress counter
+                const interval = setInterval(() => {
+                    setProgress(p => {
+                        if (p >= 100) { clearInterval(interval); return 100; }
+                        return p + Math.random() * 4 + 1;
+                    });
+                }, 80);
+
+                // Cycle tips
+                const tipInterval = setInterval(() => {
+                    setTipIndex(i => (i + 1) % t.loadingTips.length);
+                }, 1200);
+
+                // Done after 3.2s
+                const done = setTimeout(() => {
+                    setFadingOut(true);
+                    setTimeout(onDone, 800);
+                }, 3200);
+
+                return () => { clearInterval(interval); clearInterval(tipInterval); clearTimeout(done); };
+            }, []);
+
+            const displayProgress = Math.min(Math.round(progress), 100);
+
+            // Wheel segments for decorative wheel
+            const segments = 12;
+            const colors = ['#dc2626','#fbbf24','#dc2626','#fbbf24','#1f2937','#dc2626','#fbbf24','#dc2626','#fbbf24','#1f2937','#dc2626','#fbbf24'];
+
+            return (
+                <div
+                    className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${fadingOut ? 'fade-out' : ''}`}
+                    style={{ background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' }}
+                >
+                    {/* Stars background */}
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute rounded-full bg-white star-twinkle"
+                            style={{
+                                width: Math.random() * 3 + 1 + 'px',
+                                height: Math.random() * 3 + 1 + 'px',
+                                top: Math.random() * 100 + '%',
+                                left: Math.random() * 100 + '%',
+                                animationDuration: (Math.random() * 2 + 1) + 's',
+                                animationDelay: (Math.random() * 2) + 's',
+                            }}
+                        />
+                    ))}
+
+                    {/* Spinning Wheel */}
+                    <div className="relative mb-10 pulse-glow rounded-full" style={{ width: 200, height: 200 }}>
+                        <svg
+                            width="200" height="200"
+                            className="spin-wheel"
+                            style={{ filter: 'drop-shadow(0 0 30px rgba(251,191,36,0.5))' }}
+                        >
+                            {[...Array(segments)].map((_, i) => {
+                                const angle = (360 / segments) * i;
+                                const rad = (angle * Math.PI) / 180;
+                                const nextRad = (((angle + 360 / segments) * Math.PI) / 180);
+                                const r = 95;
+                                const cx = 100, cy = 100;
+                                const x1 = cx + r * Math.cos(rad);
+                                const y1 = cy + r * Math.sin(rad);
+                                const x2 = cx + r * Math.cos(nextRad);
+                                const y2 = cy + r * Math.sin(nextRad);
+                                return (
+                                    <g key={i}>
+                                        <path
+                                            d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`}
+                                            fill={colors[i]}
+                                            stroke="white"
+                                            strokeWidth="1.5"
+                                        />
+                                        <text
+                                            x={cx + (r * 0.65) * Math.cos((rad + nextRad) / 2)}
+                                            y={cy + (r * 0.65) * Math.sin((rad + nextRad) / 2)}
+                                            textAnchor="middle"
+                                            dominantBaseline="middle"
+                                            fill="white"
+                                            fontSize="11"
+                                            fontWeight="bold"
+                                        >
+                                            {colors[i] === '#1f2937' ? '💀' : [100,200,300,500,150,250,400,600,350,450][i % 10]}
+                                        </text>
+                                    </g>
+                                );
+                            })}
+                            {/* Center circle */}
+                            <circle cx="100" cy="100" r="18" fill="white" />
+                            <circle cx="100" cy="100" r="12" fill="#4f46e5" />
+                            {/* Arrow */}
+                            <polygon points="100,2 92,20 108,20" fill="#ef4444" />
+                        </svg>
+                    </div>
+
+                    {/* Title letters animated */}
+                    <div className="flex gap-1 mb-3">
+                        {(lang === 'kg' ? 'КЕРЕМЕТ' : 'ПОЛЕ').split('').map((ch, i) => (
+                            <span
+                                key={i}
+                                className="letter-pop text-yellow-400 font-black text-3xl"
+                                style={{ animationDelay: i * 0.08 + 's', opacity: 0 }}
+                            >
+                                {ch}
+                            </span>
+                        ))}
+                    </div>
+                    <div className="flex gap-1 mb-8">
+                        {(lang === 'kg' ? 'ТАЛААСЫ' : 'ЧУДЕС').split('').map((ch, i) => (
+                            <span
+                                key={i}
+                                className="letter-pop text-white font-black text-xl tracking-widest"
+                                style={{ animationDelay: (i * 0.08 + 0.4) + 's', opacity: 0 }}
+                            >
+                                {ch}
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Tip */}
+                    <div
+                        key={tipIndex}
+                        className="float-up text-indigo-300 text-sm font-medium mb-8 text-center px-8"
+                        style={{ minHeight: 24 }}
+                    >
+                        💡 {t.loadingTips[tipIndex]}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-72 mb-3">
+                        <div className="h-3 bg-white/10 rounded-full overflow-hidden border border-white/20">
+                            <div
+                                className="h-full rounded-full transition-all duration-150"
+                                style={{
+                                    width: displayProgress + '%',
+                                    background: 'linear-gradient(90deg, #4f46e5, #fbbf24)',
+                                    boxShadow: '0 0 12px rgba(251,191,36,0.6)'
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className="text-white/50 text-xs font-bold tracking-widest">{t.loading} {displayProgress}%</div>
+                </div>
+            );
+        };
+
         const KyrgyzWheelGame = () => {
             const [lang, setLang] = useState('kg');
+            const [isLoading, setIsLoading] = useState(true);
             const [gameState, setGameState] = useState('menu');
             const [currentWordIndex, setCurrentWordIndex] = useState(0);
             const [guessedLetters, setGuessedLetters] = useState([]);
@@ -137,7 +346,6 @@
 
             const canvasRef = useRef(null);
             
-            // Звуковые эффекты
             const audioRefs = {
                 spin: useRef(new Audio('https://www.soundjay.com/misc/sounds/bell-ring-01.mp3')),
                 win: useRef(new Audio('https://www.soundjay.com/human/sounds/applause-01.mp3')),
@@ -173,7 +381,33 @@
                     ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Montserrat';
                     ctx.fillText(value === 0 ? '💀' : value, radius * 0.7, 5); ctx.restore();
                 });
-                ctx.beginPath(); ctx.moveTo(centerX, centerY - radius - 20); ctx.lineTo(centerX - 15, centerY - radius); ctx.lineTo(centerX + 15, centerY - radius); ctx.fillStyle = '#ef4444'; ctx.fill();
+
+                // Arrow pointing DOWN into the wheel, sitting above it
+                const arrowTipX = centerX;
+                const arrowTipY = centerY - radius + 2; // tip touches wheel edge
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.45)';
+                ctx.shadowBlur = 6;
+                ctx.shadowOffsetY = 2;
+                const grad = ctx.createLinearGradient(arrowTipX, arrowTipY - 28, arrowTipX, arrowTipY);
+                grad.addColorStop(0, '#cc0000');
+                grad.addColorStop(1, '#ff5555');
+                ctx.beginPath();
+                ctx.moveTo(arrowTipX, arrowTipY);           // tip (bottom, pointing into wheel)
+                ctx.lineTo(arrowTipX + 10, arrowTipY - 16); // right wing
+                ctx.lineTo(arrowTipX + 4, arrowTipY - 14);  // inner right
+                ctx.lineTo(arrowTipX + 4, arrowTipY - 28);  // tail top right
+                ctx.lineTo(arrowTipX - 4, arrowTipY - 28);  // tail top left
+                ctx.lineTo(arrowTipX - 4, arrowTipY - 14);  // inner left
+                ctx.lineTo(arrowTipX - 10, arrowTipY - 16); // left wing
+                ctx.closePath();
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.restore();
             };
 
             const spinWheel = () => {
@@ -195,8 +429,15 @@
                     if (progress < 1) requestAnimationFrame(animate);
                     else {
                         const segmentAngle = (2 * Math.PI) / wheelSegments.length;
-                        const normalizedRotation = (finalRotation % (2 * Math.PI));
-                        const selectedIndex = Math.floor((2 * Math.PI - normalizedRotation + Math.PI / 2) / segmentAngle) % wheelSegments.length;
+                        // Arrow is at -π/2 (top). Wheel rotates by finalRotation.
+                        // The sector under the arrow: find which sector angle aligns with -π/2 after rotation.
+                        // Sector i starts at i*segmentAngle + rotation (mod 2π).
+                        // We want the sector where (-π/2 - rotation) falls within [i*segmentAngle, (i+1)*segmentAngle)
+                        const normalizedRotation = finalRotation % (2 * Math.PI);
+                        const arrowAngle = -Math.PI / 2; // top
+                        let relativeAngle = (arrowAngle - normalizedRotation) % (2 * Math.PI);
+                        if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
+                        const selectedIndex = Math.floor(relativeAngle / segmentAngle) % wheelSegments.length;
                         const value = wheelSegments[selectedIndex];
                         setWheelValue(value); setSpinning(false);
                         if (value === 0) {
@@ -244,7 +485,6 @@
                 }
             };
 
-            // Кнопка звука
             const SoundToggle = () => (
                 <button 
                     onClick={() => setIsMuted(!isMuted)} 
@@ -263,130 +503,132 @@
                 </button>
             );
 
-            if (gameState === 'menu') {
-                return (
-                    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-red-800 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full text-center border-t-8 border-yellow-400">
-                            <div className="flex justify-between items-center mb-6">
-                                <div className="flex gap-2">
-                                    <button onClick={() => setLang('kg')} className={`px-4 py-1 rounded-full text-sm font-bold ${lang === 'kg' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>КЫРГЫЗЧА</button>
-                                    <button onClick={() => setLang('ru')} className={`px-4 py-1 rounded-full text-sm font-bold ${lang === 'ru' ? 'bg-red-600 text-white' : 'bg-gray-100'}`}>РУССКИЙ</button>
-                                </div>
-                                <SoundToggle />
-                            </div>
-                            <h1 className="text-4xl font-black text-gray-800 mb-6 tracking-tighter italic">{t.title}</h1>
-                            <div className="bg-orange-50 rounded-2xl p-6 mb-8 text-left border-l-4 border-orange-400">
-                                <h3 className="font-bold text-gray-800 mb-3">{t.rulesTitle}</h3>
-                                <ul className="space-y-2 text-gray-600 text-sm">
-                                    {t.rules.map((r, i) => <li key={i} className="flex gap-2"><span>•</span>{r}</li>)}
-                                </ul>
-                            </div>
-                            <button onClick={startGame} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-4 rounded-2xl text-xl font-bold shadow-xl hover:scale-105 transition transform active:scale-95 uppercase">{t.startBtn}</button>
-                        </div>
-                    </div>
-                );
-            }
-
-            if (gameState === 'gameover' || gameState === 'win') {
-                return (
-                    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full text-center">
-                            <div className="text-7xl mb-4">{gameState === 'win' ? '🏆' : '💀'}</div>
-                            <h1 className={`text-4xl font-black mb-4 ${gameState === 'win' ? 'text-green-600' : 'text-red-600'}`}>{gameState === 'win' ? t.winGame : t.gameOver}</h1>
-                            <p className="text-gray-600 mb-2">{t.wordWas}</p>
-                            <div className="text-3xl font-black text-indigo-900 mb-6 tracking-widest">{wordsDatabase[currentWordIndex][lang].word}</div>
-                            <div className="bg-indigo-50 rounded-2xl p-6 mb-8">
-                                <div className="text-5xl font-black text-indigo-600">{score}</div>
-                                <div className="text-sm font-bold text-indigo-400 uppercase">{t.totalScore}</div>
-                            </div>
-                            <button onClick={startGame} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition">{t.playAgain}</button>
-                        </div>
-                    </div>
-                );
-            }
-
             return (
-                <div className="min-h-screen bg-indigo-950 p-4 relative overflow-hidden flex flex-col items-center">
-                    {showExitConfirm && (
-                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal text-center">
-                                <h2 className="text-2xl font-black text-gray-800 mb-2">{t.exitTitle}</h2>
-                                <p className="text-gray-500 mb-8">{t.exitText}</p>
-                                <button onClick={() => setGameState('menu')} className="w-full py-4 bg-red-600 text-white font-bold rounded-xl mb-3">{t.exitYes}</button>
-                                <button onClick={() => setShowExitConfirm(false)} className="w-full py-4 bg-gray-100 text-gray-600 font-bold rounded-xl">{t.exitNo}</button>
+                <>
+                    {isLoading && <LoadingScreen lang={lang} onDone={() => setIsLoading(false)} />}
+
+                    {gameState === 'menu' && !isLoading && (
+                        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-red-800 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full text-center border-t-8 border-yellow-400">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setLang('kg')} className={`px-4 py-1 rounded-full text-sm font-bold ${lang === 'kg' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>КЫРГЫЗЧА</button>
+                                        <button onClick={() => setLang('ru')} className={`px-4 py-1 rounded-full text-sm font-bold ${lang === 'ru' ? 'bg-red-600 text-white' : 'bg-gray-100'}`}>РУССКИЙ</button>
+                                    </div>
+                                    <SoundToggle />
+                                </div>
+                                <h1 className="text-4xl font-black text-gray-800 mb-6 tracking-tighter italic">{t.title}</h1>
+                                <div className="bg-orange-50 rounded-2xl p-6 mb-8 text-left border-l-4 border-orange-400">
+                                    <h3 className="font-bold text-gray-800 mb-3">{t.rulesTitle}</h3>
+                                    <ul className="space-y-2 text-gray-600 text-sm">
+                                        {t.rules.map((r, i) => <li key={i} className="flex gap-2"><span>•</span>{r}</li>)}
+                                    </ul>
+                                </div>
+                                <button onClick={startGame} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-4 rounded-2xl text-xl font-bold shadow-xl hover:scale-105 transition transform active:scale-95 uppercase">{t.startBtn}</button>
                             </div>
                         </div>
                     )}
 
-                    <div className="w-full max-w-4xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <div className="flex gap-2">
-                                <button onClick={() => setShowExitConfirm(true)} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl font-bold backdrop-blur-md transition">{t.exitBtn}</button>
-                                <SoundToggle />
-                            </div>
-                            <div className="flex gap-2">
-                                {[...Array(3)].map((_, i) => <span key={i} className={`text-2xl transition-opacity duration-500 ${i < lives ? 'opacity-100' : 'opacity-20'}`}>❤️</span>)}
+                    {(gameState === 'gameover' || gameState === 'win') && (
+                        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full text-center">
+                                <div className="text-7xl mb-4">{gameState === 'win' ? '🏆' : '💀'}</div>
+                                <h1 className={`text-4xl font-black mb-4 ${gameState === 'win' ? 'text-green-600' : 'text-red-600'}`}>{gameState === 'win' ? t.winGame : t.gameOver}</h1>
+                                <p className="text-gray-600 mb-2">{t.wordWas}</p>
+                                <div className="text-3xl font-black text-indigo-900 mb-6 tracking-widest">{wordsDatabase[currentWordIndex][lang].word}</div>
+                                <div className="bg-indigo-50 rounded-2xl p-6 mb-8">
+                                    <div className="text-5xl font-black text-indigo-600">{score}</div>
+                                    <div className="text-sm font-bold text-indigo-400 uppercase">{t.totalScore}</div>
+                                </div>
+                                <button onClick={startGame} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition">{t.playAgain}</button>
                             </div>
                         </div>
+                    )}
 
-                        <div className="bg-white rounded-[2.5rem] shadow-2xl p-6 md:p-10">
-                            <div className="flex justify-between items-end mb-8">
-                                <div>
-                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{t.round}</div>
-                                    <div className="text-3xl font-black text-indigo-600">{round} / 3</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-4xl font-black text-orange-500">{score}</div>
-                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{t.score}</div>
-                                </div>
-                            </div>
-
-                            <div className="bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-6 mb-8 text-center">
-                                <div className="text-xs font-black text-indigo-300 uppercase mb-1">{t.category}: {currentData.category}</div>
-                                <div className="text-xl font-bold text-indigo-900 italic">" {currentData.hint} "</div>
-                            </div>
-
-                            <div className="flex justify-center gap-2 mb-10 flex-wrap">
-                                {currentData.word.split('').map((letter, index) => (
-                                    <div key={index} className={`w-10 h-14 md:w-14 md:h-20 rounded-xl flex items-center justify-center border-b-8 transition-all duration-500 ${guessedLetters.includes(letter) ? 'bg-indigo-600 border-indigo-800 scale-100' : 'bg-gray-200 border-gray-300'}`}>
-                                        <span className={`text-2xl md:text-4xl font-black text-white ${guessedLetters.includes(letter) ? 'opacity-100' : 'opacity-0'}`}>{letter}</span>
+                    {gameState === 'playing' && (
+                        <div className="min-h-screen bg-indigo-950 p-4 relative overflow-hidden flex flex-col items-center">
+                            {showExitConfirm && (
+                                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal text-center">
+                                        <h2 className="text-2xl font-black text-gray-800 mb-2">{t.exitTitle}</h2>
+                                        <p className="text-gray-500 mb-8">{t.exitText}</p>
+                                        <button onClick={() => setGameState('menu')} className="w-full py-4 bg-red-600 text-white font-bold rounded-xl mb-3">{t.exitYes}</button>
+                                        <button onClick={() => setShowExitConfirm(false)} className="w-full py-4 bg-gray-100 text-gray-600 font-bold rounded-xl">{t.exitNo}</button>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            )}
 
-                            <div className="flex flex-col lg:flex-row items-center justify-around gap-10">
-                                <div className="relative">
-                                    <canvas ref={canvasRef} width="300" height="300" className="drop-shadow-2xl"></canvas>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg"></div>
+                            <div className="w-full max-w-4xl">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setShowExitConfirm(true)} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl font-bold backdrop-blur-md transition">{t.exitBtn}</button>
+                                        <SoundToggle />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {[...Array(3)].map((_, i) => <span key={i} className={`text-2xl transition-opacity duration-500 ${i < lives ? 'opacity-100' : 'opacity-20'}`}>❤️</span>)}
+                                    </div>
                                 </div>
 
-                                <div className="flex flex-col items-center gap-6 w-full max-w-sm">
-                                    <button onClick={spinWheel} disabled={spinning || wheelValue !== 0} 
-                                        className={`w-full py-5 rounded-[1.5rem] text-xl font-black shadow-xl transition transform active:scale-95 ${spinning || wheelValue !== 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-400 to-emerald-600 text-white hover:rotate-1'}`}>
-                                        {spinning ? t.spinning : t.spinBtn}
-                                    </button>
-                                    
-                                    <div className={`w-full text-center py-4 rounded-2xl font-black text-lg shadow-inner transition-all ${wheelValue > 0 ? 'bg-yellow-400 text-gray-900 animate-pulse' : 'bg-gray-100 text-indigo-300'}`}>
-                                        {message}
+                                <div className="bg-white rounded-[2.5rem] shadow-2xl p-6 md:p-10">
+                                    <div className="flex justify-between items-end mb-8">
+                                        <div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{t.round}</div>
+                                            <div className="text-3xl font-black text-indigo-600">{round} / 3</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-4xl font-black text-orange-500">{score}</div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{t.score}</div>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-9 gap-1 w-full">
-                                        {keyboard.flat().map((letter) => {
-                                            const isGuessed = guessedLetters.includes(letter);
-                                            const isInWord = currentData.word.includes(letter);
-                                            return (
-                                                <button key={letter} onClick={() => guessLetter(letter)} disabled={isGuessed || wheelValue === 0 || spinning}
-                                                    className={`aspect-square rounded-lg text-sm font-bold transition-all ${isGuessed ? (isInWord ? 'bg-green-500 text-white' : 'bg-red-200 text-red-500') : (wheelValue === 0 || spinning ? 'bg-gray-50 text-gray-200' : 'bg-white border-2 border-gray-100 text-indigo-600 hover:border-indigo-600')}`}>
-                                                    {letter}
-                                                </button>
-                                            );
-                                        })}
+                                    <div className="bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-6 mb-8 text-center">
+                                        <div className="text-xs font-black text-indigo-300 uppercase mb-1">{t.category}: {currentData.category}</div>
+                                        <div className="text-xl font-bold text-indigo-900 italic">" {currentData.hint} "</div>
+                                    </div>
+
+                                    <div className="flex justify-center gap-2 mb-10 flex-wrap">
+                                        {currentData.word.split('').map((letter, index) => (
+                                            <div key={index} className={`w-10 h-14 md:w-14 md:h-20 rounded-xl flex items-center justify-center border-b-8 transition-all duration-500 ${guessedLetters.includes(letter) ? 'bg-indigo-600 border-indigo-800 scale-100' : 'bg-gray-200 border-gray-300'}`}>
+                                                <span className={`text-2xl md:text-4xl font-black text-white ${guessedLetters.includes(letter) ? 'opacity-100' : 'opacity-0'}`}>{letter}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex flex-col lg:flex-row items-center justify-around gap-10">
+                                        <div className="relative">
+                                            <canvas ref={canvasRef} width="300" height="300" className="drop-shadow-2xl"></canvas>
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg"></div>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-6 w-full max-w-sm">
+                                            <button onClick={spinWheel} disabled={spinning || wheelValue !== 0} 
+                                                className={`w-full py-5 rounded-[1.5rem] text-xl font-black shadow-xl transition transform active:scale-95 ${spinning || wheelValue !== 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-400 to-emerald-600 text-white hover:rotate-1'}`}>
+                                                {spinning ? t.spinning : t.spinBtn}
+                                            </button>
+                                            
+                                            <div className={`w-full text-center py-4 rounded-2xl font-black text-lg shadow-inner transition-all ${wheelValue > 0 ? 'bg-yellow-400 text-gray-900 animate-pulse' : 'bg-gray-100 text-indigo-300'}`}>
+                                                {message}
+                                            </div>
+
+                                            <div className="grid grid-cols-9 gap-1 w-full">
+                                                {keyboard.flat().map((letter) => {
+                                                    const isGuessed = guessedLetters.includes(letter);
+                                                    const isInWord = currentData.word.includes(letter);
+                                                    return (
+                                                        <button key={letter} onClick={() => guessLetter(letter)} disabled={isGuessed || wheelValue === 0 || spinning}
+                                                            className={`aspect-square rounded-lg text-sm font-bold transition-all ${isGuessed ? (isInWord ? 'bg-green-500 text-white' : 'bg-red-200 text-red-500') : (wheelValue === 0 || spinning ? 'bg-gray-50 text-gray-200' : 'bg-white border-2 border-gray-100 text-indigo-600 hover:border-indigo-600')}`}>
+                                                            {letter}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    )}
+                </>
             );
         };
 
