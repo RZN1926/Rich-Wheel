@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Керемет талаасы - Поле чудес</title>
+    <title>Бакыт Дөңгөлөгү</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -224,7 +224,7 @@
 
         const translations = {
             kg: {
-                title: "КЕРЕМЕТ ТАЛААСЫ",
+                title: "БАКЫТ ДӨҢГӨЛӨГҮ",
                 loading: "Жүктөлүүдө...",
                 loadingTips: [
                     "Барабанды айлантып упай чогулт!",
@@ -257,7 +257,7 @@
                 totalScore: "Жалпы упай"
             },
             ru: {
-                title: "ПОЛЕ ЧУДЕС",
+                title: "БАКЫТ ДӨҢГӨЛӨГҮ",
                 loading: "Загрузка...",
                 loadingTips: [
                     "Крути барабан и набирай очки!",
@@ -397,7 +397,7 @@
 
                     {/* Title letters animated */}
                     <div className="flex gap-1 mb-3">
-                        {(lang === 'kg' ? 'КЕРЕМЕТ' : 'ПОЛЕ').split('').map((ch, i) => (
+                        {(lang === 'kg' ? 'БАКЫТ' : 'БАКЫТ').split('').map((ch, i) => (
                             <span
                                 key={i}
                                 className="letter-pop text-yellow-400 font-black text-3xl"
@@ -408,7 +408,7 @@
                         ))}
                     </div>
                     <div className="flex gap-1 mb-8">
-                        {(lang === 'kg' ? 'ТАЛААСЫ' : 'ЧУДЕС').split('').map((ch, i) => (
+                        {(lang === 'kg' ? 'ДӨҢГӨЛӨГҮ' : 'ДӨҢГӨЛӨГҮ').split('').map((ch, i) => (
                             <span
                                 key={i}
                                 className="letter-pop text-white font-black text-xl tracking-widest"
@@ -460,6 +460,86 @@
             const [lives, setLives] = useState(3);
             const [showExitConfirm, setShowExitConfirm] = useState(false);
             const [isMuted, setIsMuted] = useState(false);
+            const [isMusicOn, setIsMusicOn] = useState(false);
+
+            const audioCtxRef = useRef(null);
+            const musicNodesRef = useRef([]);
+
+            const stopMusic = () => {
+                musicNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
+                musicNodesRef.current = [];
+            };
+
+            const playBgMusic = () => {
+                if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = audioCtxRef.current;
+                if (ctx.state === 'suspended') ctx.resume();
+
+                // Simple looping melody using oscillators
+                const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 392.00, 349.23];
+                const noteDuration = 0.4;
+                const masterGain = ctx.createGain();
+                masterGain.gain.value = 0.08;
+                masterGain.connect(ctx.destination);
+
+                const playLoop = () => {
+                    if (!isMusicOn) return;
+                    notes.forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        osc.connect(gain);
+                        gain.connect(masterGain);
+                        const start = ctx.currentTime + i * noteDuration;
+                        const end = start + noteDuration * 0.8;
+                        gain.gain.setValueAtTime(0, start);
+                        gain.gain.linearRampToValueAtTime(1, start + 0.05);
+                        gain.gain.linearRampToValueAtTime(0, end);
+                        osc.start(start);
+                        osc.stop(end);
+                        musicNodesRef.current.push(osc);
+                    });
+                    // Also add bass
+                    const bassNotes = [130.81, 146.83, 164.81, 174.61];
+                    bassNotes.forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = freq;
+                        osc.connect(gain);
+                        gain.connect(masterGain);
+                        const start = ctx.currentTime + i * noteDuration * 2;
+                        const end = start + noteDuration * 1.6;
+                        gain.gain.setValueAtTime(0, start);
+                        gain.gain.linearRampToValueAtTime(0.6, start + 0.05);
+                        gain.gain.linearRampToValueAtTime(0, end);
+                        osc.start(start);
+                        osc.stop(end);
+                        musicNodesRef.current.push(osc);
+                    });
+
+                    // Loop
+                    setTimeout(() => {
+                        musicNodesRef.current = musicNodesRef.current.filter(n => {
+                            try { return n.playbackState !== 3; } catch(e) { return false; }
+                        });
+                        if (isMusicOnRef.current) playLoop();
+                    }, notes.length * noteDuration * 1000);
+                };
+
+                playLoop();
+            };
+
+            const isMusicOnRef = useRef(false);
+            useEffect(() => {
+                isMusicOnRef.current = isMusicOn;
+                if (isMusicOn) {
+                    playBgMusic();
+                } else {
+                    stopMusic();
+                }
+            }, [isMusicOn]);
 
             const t = translations[lang];
             const currentData = wordsDatabase[currentWordIndex][lang];
@@ -467,20 +547,96 @@
             const keyboard = [['А','Б','В','Г','Д','Е','Ё','Ж','З'],['И','Й','К','Л','М','Н','О','Ө','П'],['Р','С','Т','У','Ү','Ф','Х','Ц','Ч'],['Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я','Ң']];
 
             const canvasRef = useRef(null);
-            
-            const audioRefs = {
-                spin: useRef(new Audio('https://www.soundjay.com/misc/sounds/bell-ring-01.mp3')),
-                win: useRef(new Audio('https://www.soundjay.com/human/sounds/applause-01.mp3')),
-                lose: useRef(new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3')),
-                correct: useRef(new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3')),
-                bankrupt: useRef(new Audio('https://www.soundjay.com/buttons/sounds/button-11.mp3'))
+
+            const getAudioCtx = () => {
+                if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+                return audioCtxRef.current;
             };
 
             const playSound = (soundName) => {
-                if (!isMuted && audioRefs[soundName].current) {
-                    audioRefs[soundName].current.currentTime = 0;
-                    audioRefs[soundName].current.play().catch(e => console.log("Audio error"));
-                }
+                if (isMuted) return;
+                const ctx = getAudioCtx();
+                const master = ctx.createGain();
+                master.connect(ctx.destination);
+
+                const sounds = {
+                    spin: () => {
+                        // Whoosh sound
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(800, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.4);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                        osc.connect(gain); gain.connect(ctx.destination);
+                        osc.start(); osc.stop(ctx.currentTime + 0.4);
+                    },
+                    correct: () => {
+                        // Happy ding
+                        [523, 659, 784].forEach((freq, i) => {
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            const t = ctx.currentTime + i * 0.1;
+                            gain.gain.setValueAtTime(0.2, t);
+                            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+                            osc.connect(gain); gain.connect(ctx.destination);
+                            osc.start(t); osc.stop(t + 0.3);
+                        });
+                    },
+                    wrong: () => {
+                        // Low buzz
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.value = 150;
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                        osc.connect(gain); gain.connect(ctx.destination);
+                        osc.start(); osc.stop(ctx.currentTime + 0.3);
+                    },
+                    bankrupt: () => {
+                        // Descending horror sound
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(400, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.8);
+                        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                        osc.connect(gain); gain.connect(ctx.destination);
+                        osc.start(); osc.stop(ctx.currentTime + 0.8);
+                    },
+                    win: () => {
+                        // Victory fanfare
+                        [523, 659, 784, 1047].forEach((freq, i) => {
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            const t = ctx.currentTime + i * 0.15;
+                            gain.gain.setValueAtTime(0.25, t);
+                            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+                            osc.connect(gain); gain.connect(ctx.destination);
+                            osc.start(t); osc.stop(t + 0.5);
+                        });
+                    },
+                    lose: () => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = 200;
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                        osc.connect(gain); gain.connect(ctx.destination);
+                        osc.start(); osc.stop(ctx.currentTime + 0.25);
+                    }
+                };
+
+                if (sounds[soundName]) sounds[soundName]();
             };
 
             useEffect(() => { if (canvasRef.current && gameState === 'playing') drawWheel(0); }, [gameState]);
@@ -611,6 +767,7 @@
                 <button 
                     onClick={() => setIsMuted(!isMuted)} 
                     className="p-3 bg-white/10 hover:bg-white/20 rounded-xl backdrop-blur-md transition-all border border-white/20"
+                    title={isMuted ? 'Включить звуки' : 'Выключить звуки'}
                 >
                     {isMuted ? (
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -622,6 +779,18 @@
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                         </svg>
                     )}
+                </button>
+            );
+
+            const MusicToggle = () => (
+                <button
+                    onClick={() => setIsMusicOn(!isMusicOn)}
+                    className={`p-3 rounded-xl backdrop-blur-md transition-all border ${isMusicOn ? 'bg-yellow-400/30 border-yellow-400/60 hover:bg-yellow-400/40' : 'bg-white/10 border-white/20 hover:bg-white/20'}`}
+                    title={isMusicOn ? 'Выключить музыку' : 'Включить музыку'}
+                >
+                    <svg className={`w-6 h-6 ${isMusicOn ? 'text-yellow-300' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    </svg>
                 </button>
             );
 
@@ -640,7 +809,10 @@
                                         <button onClick={() => setLang('kg')} className={`px-4 py-1 rounded-full text-sm font-bold transition-all duration-300 ${lang === 'kg' ? 'bg-blue-600 text-white scale-105 shadow-lg' : 'bg-gray-100 hover:bg-gray-200'}`}>КЫРГЫЗЧА</button>
                                         <button onClick={() => setLang('ru')} className={`px-4 py-1 rounded-full text-sm font-bold transition-all duration-300 ${lang === 'ru' ? 'bg-red-600 text-white scale-105 shadow-lg' : 'bg-gray-100 hover:bg-gray-200'}`}>РУССКИЙ</button>
                                     </div>
-                                    <SoundToggle />
+                                    <div className="flex gap-2">
+                                        <SoundToggle />
+                                        <MusicToggle />
+                                    </div>
                                 </div>
                                 <h1 className="menu-title text-4xl font-black text-gray-800 mb-6 tracking-tighter italic">{t.title}</h1>
                                 <div className="bg-orange-50 rounded-2xl p-6 mb-8 text-left border-l-4 border-orange-400">
@@ -705,6 +877,7 @@
                                     <div className="flex gap-2">
                                         <button onClick={() => setShowExitConfirm(true)} className="bg-white/10 hover:bg-white/25 text-white px-5 py-2 rounded-xl font-bold backdrop-blur-md transition-all hover:scale-105 active:scale-95 border border-white/10">{t.exitBtn}</button>
                                         <SoundToggle />
+                                        <MusicToggle />
                                     </div>
                                     <div className="flex gap-2">
                                         {[...Array(3)].map((_, i) => (
