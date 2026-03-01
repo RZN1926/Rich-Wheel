@@ -217,6 +217,14 @@
                 ru: { word: "ЫСЫККӨЛ", hint: "Жемчужина Кыргызстана, незамерзающее озеро", category: "География" }
             },
             {
+                kg: { word: "СЕМЕТЕЙ", hint: "Манастын уулу, экинчи эпостун баатыры", category: "Эпос" },
+                ru: { word: "СЕМЕТЕЙ", hint: "Сын Манаса, герой второго эпоса", category: "Эпос" }
+            },
+            {
+                kg: { word: "АЙЧҮРӨК", hint: "Семетейдин сүйүктүү аялы, суу пери кызы", category: "Эпос" },
+                ru: { word: "АЙЧҮРӨК", hint: "Любимая жена Семетея, дочь водяной феи", category: "Эпос" }
+            },
+            {
                 kg: { word: "ШЫРДАК", hint: "Оюу түшүрүлгөн кийиз килем", category: "Кол өнөрчүлүк" },
                 ru: { word: "ШЫРДАК", hint: "Войлочный ковер с национальными узорами", category: "Ремесло" }
             }
@@ -640,6 +648,19 @@
             };
 
             useEffect(() => { if (canvasRef.current && gameState === 'playing') drawWheel(0); }, [gameState]);
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (gameState !== 'playing') return;
+                    const key = e.key.toUpperCase();
+                    const allLetters = keyboard.flat();
+                    if (allLetters.includes(key)) {
+                        guessLetter(key);
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [gameState, guessedLetters, wheelValue, spinning, currentData]);
 
             const drawWheel = (rotation) => {
                 const canvas = canvasRef.current; if (!canvas) return;
