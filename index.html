@@ -241,7 +241,7 @@
                     "Кыргызча сөздөрдү билесиңби?",
                 ],
                 rulesTitle: "Оюндун эрежелери:",
-                rules: ["🎯 Сөздөрдү тамгалап тапкыла", "🎡 Упай алуу үчүн барабанды айланткыла", "💀 'Банкрот' секторунан сак болгула", "❤️ Сизде 3 мүмкүнчүлүк бар"],
+                rules: ["🎯 Сөздөрдү тамгалап тапкыла", "🎡 Упай алуу үчүн барабанды айланткыла", "💀 'Банкрот' секторунан сак болгула", "❤️ Сизде 3 мүмкүнчүлүк бар", "⌨️ Enter = барабан айлантуу"],
                 startBtn: "Оюнду баштоо",
                 exitBtn: "Чыгуу",
                 exitTitle: "Чыгууну каалайсызбы?",
@@ -274,7 +274,7 @@
                     "Знаешь ли ты кыргызские слова?",
                 ],
                 rulesTitle: "Правила игры:",
-                rules: ["🎯 Угадывайте слова по буквам", "🎡 Крутите барабан для получения очков", "💀 Избегайте сектора 'Банкрот'", "❤️ У вас есть 3 попытки"],
+                rules: ["🎯 Угадывайте слова по буквам", "🎡 Крутите барабан для получения очков", "💀 Избегайте сектора 'Банкрот'", "❤️ У вас есть 3 попытки", "⌨️ Enter = крутить барабан"],
                 startBtn: "Начать игру",
                 exitBtn: "Выход",
                 exitTitle: "Хотите выйти?",
@@ -471,75 +471,26 @@
             const [isMusicOn, setIsMusicOn] = useState(false);
 
             const audioCtxRef = useRef(null);
-            const musicNodesRef = useRef([]);
+            // ✅ ИЗМЕНЕНИЕ 1: реальный MP3 вместо синтезатора
+            const bgAudioRef = useRef(null);
+            const isMusicOnRef = useRef(false);
 
             const stopMusic = () => {
-                musicNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
-                musicNodesRef.current = [];
+                if (bgAudioRef.current) {
+                    bgAudioRef.current.pause();
+                    bgAudioRef.current.currentTime = 0;
+                }
             };
 
             const playBgMusic = () => {
-                if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-                const ctx = audioCtxRef.current;
-                if (ctx.state === 'suspended') ctx.resume();
-
-                // Simple looping melody using oscillators
-                const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 392.00, 349.23];
-                const noteDuration = 0.4;
-                const masterGain = ctx.createGain();
-                masterGain.gain.value = 0.08;
-                masterGain.connect(ctx.destination);
-
-                const playLoop = () => {
-                    if (!isMusicOn) return;
-                    notes.forEach((freq, i) => {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.value = freq;
-                        osc.connect(gain);
-                        gain.connect(masterGain);
-                        const start = ctx.currentTime + i * noteDuration;
-                        const end = start + noteDuration * 0.8;
-                        gain.gain.setValueAtTime(0, start);
-                        gain.gain.linearRampToValueAtTime(1, start + 0.05);
-                        gain.gain.linearRampToValueAtTime(0, end);
-                        osc.start(start);
-                        osc.stop(end);
-                        musicNodesRef.current.push(osc);
-                    });
-                    // Also add bass
-                    const bassNotes = [130.81, 146.83, 164.81, 174.61];
-                    bassNotes.forEach((freq, i) => {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.type = 'triangle';
-                        osc.frequency.value = freq;
-                        osc.connect(gain);
-                        gain.connect(masterGain);
-                        const start = ctx.currentTime + i * noteDuration * 2;
-                        const end = start + noteDuration * 1.6;
-                        gain.gain.setValueAtTime(0, start);
-                        gain.gain.linearRampToValueAtTime(0.6, start + 0.05);
-                        gain.gain.linearRampToValueAtTime(0, end);
-                        osc.start(start);
-                        osc.stop(end);
-                        musicNodesRef.current.push(osc);
-                    });
-
-                    // Loop
-                    setTimeout(() => {
-                        musicNodesRef.current = musicNodesRef.current.filter(n => {
-                            try { return n.playbackState !== 3; } catch(e) { return false; }
-                        });
-                        if (isMusicOnRef.current) playLoop();
-                    }, notes.length * noteDuration * 1000);
-                };
-
-                playLoop();
+                if (!bgAudioRef.current) {
+                    bgAudioRef.current = new Audio('https://cs9-13v4.vkuseraudio.net/s/v1/acmp/XC530iDBA9nibdBBXuY5qamPvBT9MfU9UPQ8vNdAnax35JZf5A-AU6_pLaBNXZEYtNLwm3du-bT01Y5_SCpVL1zSoJvLOiM_yR-70iyh1Li4y4FVnCW5qjbdVeub1bkD3rXyfYBlUeB4loNcjuI27DbPcOOoo0JieDPKCZxUgryXd2ppdA.mp3?siren=1');
+                    bgAudioRef.current.loop = true;
+                    bgAudioRef.current.volume = 0.75; // ✅ 75% громкость
+                }
+                bgAudioRef.current.play().catch(() => {});
             };
 
-            const isMusicOnRef = useRef(false);
             useEffect(() => {
                 isMusicOnRef.current = isMusicOn;
                 if (isMusicOn) {
@@ -649,9 +600,14 @@
 
             useEffect(() => { if (canvasRef.current && gameState === 'playing') drawWheel(0); }, [gameState]);
 
+            // ✅ ИЗМЕНЕНИЕ 2: Enter крутит барабан
             useEffect(() => {
                 const handleKeyDown = (e) => {
                     if (gameState !== 'playing') return;
+                    if (e.key === 'Enter') {
+                        if (!spinning && wheelValue === 0) spinWheel();
+                        return;
+                    }
                     const key = e.key.toUpperCase();
                     const allLetters = keyboard.flat();
                     if (allLetters.includes(key)) {
@@ -728,10 +684,6 @@
                     if (progress < 1) requestAnimationFrame(animate);
                     else {
                         const segmentAngle = (2 * Math.PI) / wheelSegments.length;
-                        // Arrow is at -π/2 (top). Wheel rotates by finalRotation.
-                        // The sector under the arrow: find which sector angle aligns with -π/2 after rotation.
-                        // Sector i starts at i*segmentAngle + rotation (mod 2π).
-                        // We want the sector where (-π/2 - rotation) falls within [i*segmentAngle, (i+1)*segmentAngle)
                         const normalizedRotation = finalRotation % (2 * Math.PI);
                         const arrowAngle = -Math.PI / 2; // top
                         let relativeAngle = (arrowAngle - normalizedRotation) % (2 * Math.PI);
