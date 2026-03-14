@@ -184,50 +184,82 @@
 
         // --- БАЗА ДАННЫХ СЛОВ ---
         const wordsDatabase = [
-            {
-                kg: { word: "ТҮНДҮК", hint: "Боз үйдүн төбөсүндөгү тегерек алкак", category: "Боз үй" },
-                ru: { word: "ТҮНДҮК", hint: "Круглый венец на вершине юрты", category: "Юрта" }
-            },
-            {
-                kg: { word: "БОЗҮЙ", hint: "Көчмөндөрдүн салттуу турак жайы", category: "Турак жай" },
-                ru: { word: "БОЗҮЙ", hint: "Традиционное жилище кочевников", category: "Жилище" }
-            },
-            {
-                kg: { word: "КОМУЗ", hint: "Кыргыздын үч кылдуу музыкалык аспабы", category: "Музыка" },
-                ru: { word: "КОМУЗ", hint: "Кыргызский трехструнный музыкальный инструмент", category: "Музыка" }
-            },
-            {
-                kg: { word: "МАНАС", hint: "Дүйнөдөгү эң чоң залкар эпос", category: "Эпос" },
-                ru: { word: "МАНАС", hint: "Величайший эпос в мире", category: "Эпос" }
-            },
-            {
-                kg: { word: "КАЛПАК", hint: "Кыргыздын улуттук эркек баш кийими", category: "Кийим" },
-                ru: { word: "КАЛПАК", hint: "Национальный мужской головной убор", category: "Одежда" }
-            },
-            {
-                kg: { word: "БЕШБАРМАК", hint: "Эт менен камырдан жасалган сый тамак", category: "Тамак-аш" },
-                ru: { word: "БЕШБАРМАК", hint: "Почетное блюдо из мяса и теста", category: "Еда" }
-            },
-            {
-                kg: { word: "КӨКБӨРҮ", hint: "Ат үстүндөгү улуттук оюн", category: "Спорт" },
-                ru: { word: "КӨКБӨРҮ", hint: "Национальная конная игра", category: "Спорт" }
-            },
-            {
-                kg: { word: "ЫСЫККӨЛ", hint: "Кыргызстандын бермети, тоңбогон көл", category: "География" },
-                ru: { word: "ЫСЫККӨЛ", hint: "Жемчужина Кыргызстана, незамерзающее озеро", category: "География" }
-            },
-            {
-                kg: { word: "СЕМЕТЕЙ", hint: "Манастын уулу, экинчи эпостун баатыры", category: "Эпос" },
-                ru: { word: "СЕМЕТЕЙ", hint: "Сын Манаса, герой второго эпоса", category: "Эпос" }
-            },
-            {
-                kg: { word: "АЙЧҮРӨК", hint: "Семетейдин сүйүктүү аялы, суу пери кызы", category: "Эпос" },
-                ru: { word: "АЙЧҮРӨК", hint: "Любимая жена Семетея, дочь водяной феи", category: "Эпос" }
-            },
-            {
-                kg: { word: "ШЫРДАК", hint: "Оюу түшүрүлгөн кийиз килем", category: "Кол өнөрчүлүк" },
-                ru: { word: "ШЫРДАК", hint: "Войлочный ковер с национальными узорами", category: "Ремесло" }
-            }
+            // --- БОЗ ҮЙ ЖАНА ТУРАК ЖАЙ ---
+            { kg: { word: "ТҮНДҮК", hint: "Боз үйдүн төбөсүндөгү тегерек алкак", category: "Боз үй" }, ru: { word: "ТҮНДҮК", hint: "Круглый венец на вершине юрты", category: "Юрта" } },
+            { kg: { word: "БОЗҮЙ", hint: "Көчмөндөрдүн салттуу турак жайы", category: "Турак жай" }, ru: { word: "БОЗҮЙ", hint: "Традиционное жилище кочевников", category: "Жилище" } },
+            { kg: { word: "УУК", hint: "Түндүк менен керегени бириктирген жыгачтар", category: "Боз үй" }, ru: { word: "УУК", hint: "Жерди, соединяющие венец с решеткой", category: "Юрта" } },
+            { kg: { word: "КЕРЕГЕ", hint: "Боз үйдүн жыйылып-жазылуучу дубалы", category: "Боз үй" }, ru: { word: "КЕРЕГЕ", hint: "Раздвижная решетчатая основа юрты", category: "Юрта" } },
+            { kg: { word: "ЧЫЙ", hint: "Чийден токулган боз үйдүн тосмосу", category: "Боз үй" }, ru: { word: "ЧИЙ", hint: "Циновка из тростника для юрты", category: "Юрта" } },
+            { kg: { word: "ЖАПЫРЫК", hint: "Боз үйдүн түндүгүн жапкан кийиз", category: "Боз үй" }, ru: { word: "ДЖАПЫРЫК", hint: "Войлочное покрытие верхушки юрты", category: "Юрта" } },
+            { kg: { word: "КОЛОМТО", hint: "Боз үйдүн ортосундагы от жагылуучу жер", category: "Боз үй" }, ru: { word: "КОЛОМТО", hint: "Место для разведения огня в центре юрты", category: "Юрта" } },
+
+            // --- МУЗЫКА ---
+            { kg: { word: "КОМУЗ", hint: "Кыргыздын үч кылдуу музыкалык аспабы", category: "Музыка" }, ru: { word: "КОМУЗ", hint: "Кыргызский трехструнный музыкальный инструмент", category: "Музыка" } },
+            { kg: { word: "КЫЛКЫЯК", hint: "Эки кылдуу жаалуу музыкалык аспап", category: "Музыка" }, ru: { word: "КЫЛКЫЯК", hint: "Двухструнный смычковый инструмент", category: "Музыка" } },
+            { kg: { word: "ТЕМИРКОМУЗ", hint: "Ооздо ойнолуучу темир аспап", category: "Музыка" }, ru: { word: "ТЕМИРКОМУЗ", hint: "Ротовой железный инструмент", category: "Музыка" } },
+            { kg: { word: "ЧООР", hint: "Жыгачтан жасалган үйлөмө аспап", category: "Музыка" }, ru: { word: "ЧООР", hint: "Деревянный духовой инструмент", category: "Музыка" } },
+            { kg: { word: "СУРНАЙ", hint: "Бийик үндүү үйлөмө аспап", category: "Музыка" }, ru: { word: "СУРНАЙ", hint: "Громкий духовой инструмент", category: "Музыка" } },
+
+            // --- ЭПОС ---
+            { kg: { word: "МАНАС", hint: "Дүйнөдөгү эң чоң залкар эпос", category: "Эпос" }, ru: { word: "МАНАС", hint: "Величайший эпос в мире", category: "Эпос" } },
+            { kg: { word: "СЕМЕТЕЙ", hint: "Манастын уулу, экинчи эпостун баатыры", category: "Эпос" }, ru: { word: "СЕМЕТЕЙ", hint: "Сын Манаса, герой второго эпоса", category: "Эпос" } },
+            { kg: { word: "АЙЧҮРӨК", hint: "Семетейдин сүйүктүү аялы, суу пери кызы", category: "Эпос" }, ru: { word: "АЙЧҮРӨК", hint: "Любимая жена Семетея, дочь водяной феи", category: "Эпос" } },
+            { kg: { word: "КАНЫКЕЙ", hint: "Манастын акылдуу жана ишенимдүү жубайы", category: "Эпос" }, ru: { word: "КАНЫКЕЙ", hint: "Мудрая и верная жена Манаса", category: "Эпос" } },
+            { kg: { word: "БАКАЙ", hint: "Манастын эң жакын кеңешчиси, акылман карыя", category: "Эпос" }, ru: { word: "БАКАЙ", hint: "Мудрый старец, советник Манаса", category: "Эпос" } },
+            { kg: { word: "СЕЙТЕК", hint: "Манас эпосунун үчүнчү бөлүгүнүн баатыры", category: "Эпос" }, ru: { word: "СЕЙТЕК", hint: "Герой третьей части эпоса Манас", category: "Эпос" } },
+            { kg: { word: "АЛМАМБЕТ", hint: "Манастын эң жакын чоросу", category: "Эпос" }, ru: { word: "АЛМАМБЕТ", hint: "Ближайший соратник Манаса", category: "Эпос" } },
+            { kg: { word: "КОШОЙ", hint: "Манастын бата берген карыя досу", category: "Эпос" }, ru: { word: "КОШОЙ", hint: "Старейшина, друг Манаса", category: "Эпос" } },
+            { kg: { word: "ЧОРО", hint: "Баатырдын ишенимдүү жоокери", category: "Эпос" }, ru: { word: "ЧОРО", hint: "Верный воин богатыря", category: "Эпос" } },
+            { kg: { word: "АККУЛА", hint: "Манас баатырдын ишенимдүү тулпары", category: "Эпос" }, ru: { word: "АККУЛА", hint: "Верный конь богатыря Манаса", category: "Эпос" } },
+
+            // --- КИЙИМ ---
+            { kg: { word: "КАЛПАК", hint: "Кыргыздын улуттук эркек баш кийими", category: "Кийим" }, ru: { word: "КАЛПАК", hint: "Национальный мужской головной убор", category: "Одежда" } },
+            { kg: { word: "ЭЛЕЧЕК", hint: "Аялдардын байыркы баш кийими", category: "Кийим" }, ru: { word: "ЭЛЕЧЕК", hint: "Старинный женский головной убор", category: "Одежда" } },
+            { kg: { word: "ЧАПАН", hint: "Сырткы жылуу кийим", category: "Кийим" }, ru: { word: "ЧАПАН", hint: "Верхняя теплая одежда", category: "Одежда" } },
+            { kg: { word: "ТЕБЕТЕЙ", hint: "Аң терисинен жасалган жылуу баш кийим", category: "Кийим" }, ru: { word: "ТЕБЕТЕЙ", hint: "Теплая шапка из меха", category: "Одежда" } },
+            { kg: { word: "БЕЛДЕМЧИ", hint: "Аялдардын белине тагынуучу кийими", category: "Кийим" }, ru: { word: "БЕЛДЕМЧИ", hint: "Распашная юбка, элемент женского костюма", category: "Одежда" } },
+            { kg: { word: "МААСЫ", hint: "Ичинен кийиле турган жумшак бут кийим", category: "Кийим" }, ru: { word: "МААСЫ", hint: "Мягкая обувь, надеваемая внутрь", category: "Одежда" } },
+            { kg: { word: "ИЧИК", hint: "Териден тигилген тон", category: "Кийим" }, ru: { word: "ИЧИК", hint: "Шуба из меха", category: "Одежда" } },
+
+            // --- ТАМАК-АШ ---
+            { kg: { word: "БЕШБАРМАК", hint: "Эт менен камырдан жасалган сый тамак", category: "Тамак-аш" }, ru: { word: "БЕШБАРМАК", hint: "Почетное блюдо из мяса и теста", category: "Еда" } },
+            { kg: { word: "КЫМЫЗ", hint: "Бээнин сүтүнөн жасалган дарылык суусундук", category: "Тамак-аш" }, ru: { word: "КУМЫС", hint: "Целебный напиток из кобыльего молока", category: "Еда" } },
+            { kg: { word: "БООРСОК", hint: "Майга бышырылган төрт бурчтуу камыр", category: "Тамак-аш" }, ru: { word: "БОРСОК", hint: "Обжаренные в масле кусочки теста", category: "Еда" } },
+            { kg: { word: "МАКСЫМ", hint: "Дандан жасалган улуттук суусундук", category: "Тамак-аш" }, ru: { word: "МАКСЫМ", hint: "Национальный напиток из злаков", category: "Еда" } },
+            { kg: { word: "КУРУТ", hint: "Сүзмөдөн жасалган кургатылган тоголокчолор", category: "Тамак-аш" }, ru: { word: "КУРУТ", hint: "Сушеные шарики из сузьмы", category: "Еда" } },
+            { kg: { word: "КАТТАМА", hint: "Кат-кат болуп бышырылган нан", category: "Тамак-аш" }, ru: { word: "КАТТАМА", hint: "Слоеная лепешка", category: "Еда" } },
+            { kg: { word: "КУУРДАК", hint: "Майга куурулган эт жана пияз", category: "Тамак-аш" }, ru: { word: "КУУРДАК", hint: "Жареное мясо с луком", category: "Еда" } },
+            { kg: { word: "ШОРПО", hint: "Эттин ширесинен жасалган сорпо", category: "Тамак-аш" }, ru: { word: "ШОРПО", hint: "Бульон из мяса", category: "Еда" } },
+            { kg: { word: "СҮЗМӨ", hint: "Айрандан жасалган коюу азык", category: "Тамак-аш" }, ru: { word: "СУЗЬМА", hint: "Густой продукт из айрана", category: "Еда" } },
+            { kg: { word: "ОРӨМӨ", hint: "Камыр менен жашылчадан жасалган буу тамагы", category: "Тамак-аш" }, ru: { word: "ОРОМО", hint: "Паровое блюдо из теста и овощей", category: "Еда" } },
+            { kg: { word: "БОЗО", hint: "Дандан жасалган күчтүү суусундук", category: "Тамак-аш" }, ru: { word: "БОЗО", hint: "Крепкий напиток из зерна", category: "Еда" } },
+
+            // --- СПОРТ ---
+            { kg: { word: "КӨКБӨРҮ", hint: "Ат үстүндөгү улуттук оюн", category: "Спорт" }, ru: { word: "КӨКБӨРҮ", hint: "Национальная конная игра", category: "Спорт" } },
+            { kg: { word: "КЫЗКУУМАЙ", hint: "Ат үстүндө кызды кууп жетүү оюну", category: "Спорт" }, ru: { word: "КЫЗКУУМАЙ", hint: "Игра в погоню за девушкой на лошадях", category: "Спорт" } },
+            { kg: { word: "ООДАРЫШ", hint: "Ат үстүндөгү балбандардын күрөшү", category: "Спорт" }, ru: { word: "ООДАРЫШ", hint: "Борьба всадников на лошадях", category: "Спорт" } },
+            { kg: { word: "ТОГУЗКОРГООЛ", hint: "Кыргыздын интеллектуалдык оюну", category: "Спорт" }, ru: { word: "ТОГУЗКОРГООЛ", hint: "Кыргызская интеллектуальная игра", category: "Спорт" } },
+            { kg: { word: "КҮРӨШ", hint: "Улуттук бел боо күрөшү", category: "Спорт" }, ru: { word: "КУРЕШ", hint: "Национальная борьба на поясах", category: "Спорт" } },
+            { kg: { word: "ТЫЙЫНЭҢМЕЙ", hint: "Ат менен баратып жерден тыйын алуу", category: "Спорт" }, ru: { word: "ТЫЙЫНЭНМЕЙ", hint: "Поднятие монеты с земли на скаку", category: "Спорт" } },
+
+            // --- ГЕОГРАФИЯ ---
+            { kg: { word: "ЫСЫККӨЛ", hint: "Кыргызстандын бермети, тоңбогон көл", category: "География" }, ru: { word: "ЫСЫККӨЛ", hint: "Жемчужина Кыргызстана, незамерзающее озеро", category: "География" } },
+            { kg: { word: "СУЛАЙМАНТОО", hint: "Ош шаарындагы ыйык тоо", category: "География" }, ru: { word: "СУЛАЙМАНТОО", hint: "Священная гора в городе Ош", category: "География" } },
+            { kg: { word: "САРЫЧЕЛЕК", hint: "Жалал-Абаддагы кооз тоо көлү", category: "География" }, ru: { word: "САРЫЧЕЛЕК", hint: "Живописное горное озеро в Джалал-Абаде", category: "География" } },
+            { kg: { word: "СОҢКӨЛ", hint: "Нарындагы бийик тоолуу жайлоо көлү", category: "География" }, ru: { word: "СОНКУЛЬ", hint: "Высокогорное пастбищное озеро в Нарыне", category: "География" } },
+            { kg: { word: "НАРЫН", hint: "Кыргызстандагы эң узун дарыя", category: "География" }, ru: { word: "НАРЫН", hint: "Самая длинная река в Кыргызстане", category: "География" } },
+            { kg: { word: "АРСТАНБАП", hint: "Дүйнөдөгү эң чоң жаңгак токою", category: "География" }, ru: { word: "АРСЛАНБОБ", hint: "Самый большой ореховый лес в мире", category: "География" } },
+            { kg: { word: "ХАНТЕНГРИ", hint: "Тянь-Шань тоолорунун бийик чокусу", category: "География" }, ru: { word: "ХАНТЕНГРИ", hint: "Высокая вершина гор Тянь-Шаня", category: "География" } },
+            { kg: { word: "АЛААРЧА", hint: "Бишкекке жакын жайгашкан улуттук парк", category: "География" }, ru: { word: "АЛААРЧА", hint: "Национальный парк недалеко от Бишкека", category: "География" } },
+            { kg: { word: "ТЯНЬШАНЬ", hint: "Кыргызстандын аймагындагы эң чоң тоо системасы", category: "География" }, ru: { word: "ТЯНЬШАНЬ", hint: "Крупнейшая горная система на территории Кыргызстана", category: "География" } },
+
+            // --- КОЛ ӨНӨРЧҮЛҮК ---
+            { kg: { word: "ШЫРДАК", hint: "Оюу түшүрүлгөн кийиз килем", category: "Кол өнөрчүлүк" }, ru: { word: "ШЫРДАК", hint: "Войлочный ковер с национальными узорами", category: "Ремесло" } },
+            { kg: { word: "АЛАКИЙИЗ", hint: "Оюу басылган калың кийиз", category: "Кол өнөрчүлүк" }, ru: { word: "АЛАКИЙИЗ", hint: "Плотный войлок с вваленным узором", category: "Ремесло" } },
+            { kg: { word: "КУРАК", hint: "Кездемелердин калдыктарынан куралган буюм", category: "Кол өнөрчүлүк" }, ru: { word: "КУРАК", hint: "Изделие из лоскутков ткани", category: "Ремесло" } },
+            { kg: { word: "ТУШКИЙИЗ", hint: "Дубалга илинген саймалуу кийиз", category: "Кол өнөрчүлүк" }, ru: { word: "ТУШКИЙИЗ", hint: "Настенное вышитое панно", category: "Ремесло" } },
+            { kg: { word: "КАМЧЫ", hint: "Ат айдоочу өрүлгөн курал", category: "Кол өнөрчүлүк" }, ru: { word: "КАМЧА", hint: "Плетенная плеть для управления конем", category: "Ремесло" } },
+            { kg: { word: "КЕМЕР", hint: "Күмүш менен кооздолгон кур", category: "Кол өнөрчүлүк" }, ru: { word: "КЕМЕР", hint: "Пояс, украшенный серебром", category: "Ремесло" } }
         ];
 
         const translations = {
@@ -469,6 +501,20 @@
             const [showExitConfirm, setShowExitConfirm] = useState(false);
             const [isMuted, setIsMuted] = useState(false);
             const [isMusicOn, setIsMusicOn] = useState(false);
+            const [playerName, setPlayerName] = useState('');
+            const [playerNameInput, setPlayerNameInput] = useState('');
+            const [numPlayers, setNumPlayers] = useState(1);
+            const [player2NameInput, setPlayer2NameInput] = useState('');
+            const [player2Name, setPlayer2Name] = useState('');
+            const [currentPlayer, setCurrentPlayer] = useState(1);
+            const [scores, setScores] = useState([0, 0]);
+            const [timeLeft, setTimeLeft] = useState(30);
+            const [timerActive, setTimerActive] = useState(false);
+            const [showLeaderboard, setShowLeaderboard] = useState(false);
+            const [leaderboard, setLeaderboard] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('bakyt_leaderboard') || '[]'); } catch { return []; }
+            });
+            const timerRef = useRef(null);
 
             const audioCtxRef = useRef(null);
             // ✅ ИЗМЕНЕНИЕ 1: реальный MP3 вместо синтезатора
@@ -705,7 +751,78 @@
 
             const startGame = () => {
                 setCurrentWordIndex(Math.floor(Math.random() * wordsDatabase.length));
-                setGuessedLetters([]); setScore(0); setRound(1); setLives(3); setWheelValue(0); setMessage(t.spinBtn); setGameState('playing'); setShowExitConfirm(false);
+                setGuessedLetters([]); setScore(0); setScores([0,0]); setRound(1); setLives(3); setWheelValue(0); setMessage(t.spinBtn); setGameState('playing'); setShowExitConfirm(false); setCurrentPlayer(1);
+                setTimeLeft(30); setTimerActive(false);
+                if (timerRef.current) clearInterval(timerRef.current);
+            };
+
+            // Start timer when wheel value is set
+            useEffect(() => {
+                if (wheelValue > 0 && gameState === 'playing') {
+                    setTimeLeft(30);
+                    setTimerActive(true);
+                } else {
+                    setTimerActive(false);
+                    if (timerRef.current) clearInterval(timerRef.current);
+                }
+            }, [wheelValue, gameState]);
+
+            // Timer countdown
+            useEffect(() => {
+                if (!timerActive) { if (timerRef.current) clearInterval(timerRef.current); return; }
+                timerRef.current = setInterval(() => {
+                    setTimeLeft(t => {
+                        if (t <= 1) {
+                            clearInterval(timerRef.current);
+                            setTimerActive(false);
+                            setWheelValue(0);
+                            setMessage(lang === 'kg' ? '⏰ Убакыт бүттү!' : '⏰ Время вышло!');
+                            if (numPlayers === 2) setCurrentPlayer(p => p === 1 ? 2 : 1);
+                            else setLives(l => l > 1 ? (setTimeout(() => setMessage(translations[lang].spinBtn), 1000), l - 1) : (setGameState('gameover'), 0));
+                            return 0;
+                        }
+                        return t - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timerRef.current);
+            }, [timerActive]);
+
+            // Save score to leaderboard when game ends
+            useEffect(() => {
+                if (gameState === 'win' || gameState === 'gameover') {
+                    const finalScore = numPlayers === 2 ? Math.max(scores[0], scores[1]) : score;
+                    const name = numPlayers === 2
+                        ? (scores[0] >= scores[1] ? playerName : player2Name)
+                        : playerName;
+                    if (name && finalScore > 0) {
+                        const entry = { name, score: finalScore, date: new Date().toLocaleDateString() };
+                        const updated = [...leaderboard, entry].sort((a,b) => b.score - a.score).slice(0, 10);
+                        setLeaderboard(updated);
+                        try { localStorage.setItem('bakyt_leaderboard', JSON.stringify(updated)); } catch {}
+                    }
+                }
+            }, [gameState]);
+
+            const useHint = () => {
+                const word = currentData.word;
+                const hidden = word.split('').filter(l => !guessedLetters.includes(l));
+                if (hidden.length === 0) return;
+                const penalty = 200;
+                const currentScore = numPlayers === 2 ? scores[currentPlayer-1] : score;
+                if (currentScore < penalty) {
+                    setMessage(lang === 'kg' ? '⭐ Упай жетишсиз!' : '⭐ Недостаточно очков!');
+                    setTimeout(() => setMessage(t.spinBtn), 1500);
+                    return;
+                }
+                const randomLetter = hidden[Math.floor(Math.random() * hidden.length)];
+                setGuessedLetters(g => [...g, randomLetter]);
+                if (numPlayers === 2) {
+                    setScores(s => { const ns = [...s]; ns[currentPlayer-1] -= penalty; return ns; });
+                } else {
+                    setScore(s => s - penalty);
+                }
+                setMessage(lang === 'kg' ? `⭐ "${randomLetter}" ачылды! −${penalty} упай` : `⭐ Открыта "${randomLetter}"! −${penalty} очков`);
+                setTimeout(() => setMessage(wheelValue > 0 ? t.spinBtn : t.spinBtn), 1500);
             };
 
             const guessLetter = (letter) => {
@@ -717,22 +834,59 @@
                 if (word.includes(letter)) {
                     playSound('correct');
                     const count = word.split('').filter(l => l === letter).length;
-                    setScore(s => s + (wheelValue * count));
-                    setMessage(t.correct);
+                    const earned = wheelValue * count;
+                    if (numPlayers === 2) {
+                        setScores(s => { const ns = [...s]; ns[currentPlayer-1] += earned; return ns; });
+                    } else {
+                        setScore(s => s + earned);
+                    }
+                    // Check if word is fully guessed
                     if (word.split('').every(l => newGuessed.includes(l))) {
                         playSound('win');
+                        setMessage(t.correct);
                         setTimeout(() => {
                             if (round < 3) {
                                 setRound(r => r + 1);
                                 setCurrentWordIndex(Math.floor(Math.random() * wordsDatabase.length));
-                                setGuessedLetters([]); setWheelValue(0); setMessage(t.winRound);
-                            } else setGameState('win');
+                                setGuessedLetters([]); setWheelValue(0); setTimerActive(false);
+                                setMessage(t.winRound);
+                            } else {
+                                setGameState('win');
+                            }
                         }, 2000);
-                    } else { setWheelValue(0); setTimeout(() => setMessage(t.spinBtn), 1000); }
+                    } else {
+                        // ✅ Correct: reset wheel, same player spins again
+                        setWheelValue(0);
+                        setTimerActive(false);
+                        const spinAgainMsg = numPlayers === 2
+                            ? (lang === 'kg'
+                                ? `✅ ТУУРА! +${earned} упай — ${currentPlayer === 1 ? playerName : player2Name}, барабанды айлант!`
+                                : `✅ ВЕРНО! +${earned} очков — ${currentPlayer === 1 ? playerName : player2Name}, крути снова!`)
+                            : (lang === 'kg'
+                                ? `✅ ТУУРА! +${earned} упай — барабанды айлант!`
+                                : `✅ ВЕРНО! +${earned} очков — крути снова!`);
+                        setMessage(spinAgainMsg);
+                        setTimeout(() => setMessage(t.spinBtn), 1800);
+                    }
                 } else {
+                    // ❌ Wrong: lose turn, switch player
                     playSound('lose');
-                    setMessage(t.wrong);
-                    setLives(l => l > 1 ? (setWheelValue(0), setTimeout(() => setMessage(t.spinBtn), 1000), l - 1) : (setGameState('gameover'), 0));
+                    setWheelValue(0);
+                    setTimerActive(false);
+                    if (numPlayers === 2) {
+                        const nextName = currentPlayer === 1 ? player2Name : playerName;
+                        setCurrentPlayer(p => p === 1 ? 2 : 1);
+                        const wrongMsg = lang === 'kg'
+                            ? `❌ КАТА! Кезек — ${nextName}`
+                            : `❌ ОШИБКА! Ход переходит к ${nextName}`;
+                        setMessage(wrongMsg);
+                        setTimeout(() => setMessage(t.spinBtn), 1800);
+                    } else {
+                        setMessage(t.wrong);
+                        setLives(l => l > 1
+                            ? (setTimeout(() => setMessage(t.spinBtn), 1500), l - 1)
+                            : (setGameState('gameover'), 0));
+                    }
                 }
             };
 
@@ -773,7 +927,40 @@
 
                     {gameState === 'menu' && (
                         <div className="menu-bg min-h-screen flex items-center justify-center p-4" style={{background: 'linear-gradient(135deg, #1e1b4b, #4c1d95, #7f1d1d, #1e1b4b)'}}>
-                            {/* floating orbs */}
+                            {/* Leaderboard modal */}
+                            {showLeaderboard && (
+                                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal">
+                                        <h2 className="text-2xl font-black text-gray-800 mb-6 text-center">🏆 {lang === 'kg' ? 'Рекорддор' : 'Таблица рекордов'}</h2>
+                                        {leaderboard.length === 0 ? (
+                                            <p className="text-center text-gray-400 font-bold py-8">{lang === 'kg' ? 'Азырынча рекорд жок' : 'Рекордов пока нет'}</p>
+                                        ) : (
+                                            <div className="space-y-2 max-h-72 overflow-y-auto">
+                                                {leaderboard.map((entry, i) => (
+                                                    <div key={i} className={`flex items-center justify-between px-4 py-3 rounded-2xl ${i === 0 ? 'bg-yellow-50 border-2 border-yellow-300' : i === 1 ? 'bg-gray-50 border-2 border-gray-300' : i === 2 ? 'bg-orange-50 border-2 border-orange-300' : 'bg-indigo-50 border border-indigo-100'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-xl">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`}</span>
+                                                            <div>
+                                                                <div className="font-black text-gray-800">{entry.name}</div>
+                                                                <div className="text-xs text-gray-400">{entry.date}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-xl font-black text-indigo-600">{entry.score}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="flex gap-3 mt-6">
+                                            <button onClick={() => { setLeaderboard([]); try { localStorage.removeItem('bakyt_leaderboard'); } catch {} }} className="flex-1 py-3 bg-red-50 text-red-400 font-bold rounded-2xl hover:bg-red-100 transition-all text-sm">
+                                                🗑 {lang === 'kg' ? 'Тазалоо' : 'Очистить'}
+                                            </button>
+                                            <button onClick={() => setShowLeaderboard(false)} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all">
+                                                ✓ {lang === 'kg' ? 'Жабуу' : 'Закрыть'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div className="float-orb absolute w-64 h-64 rounded-full top-10 left-10 pointer-events-none" style={{background:'radial-gradient(circle, rgba(251,191,36,0.3), transparent)', animationDuration:'7s'}} />
                             <div className="float-orb absolute w-48 h-48 rounded-full bottom-20 right-10 pointer-events-none" style={{background:'radial-gradient(circle, rgba(139,92,246,0.3), transparent)', animationDuration:'9s', animationDelay:'2s'}} />
                             <div className="menu-card bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full text-center border-t-8 border-yellow-400" style={{boxShadow:'0 30px 80px rgba(0,0,0,0.4)'}}>
@@ -794,8 +981,90 @@
                                         {t.rules.map((r, i) => <li key={i} className="menu-rule-item flex gap-2" style={{animationDelay: (0.3 + i * 0.1) + 's'}}><span>•</span>{r}</li>)}
                                     </ul>
                                 </div>
-                                <button onClick={startGame} className="w-full py-4 rounded-2xl text-xl font-bold shadow-xl uppercase transition-all duration-200 hover:scale-105 hover:shadow-2xl active:scale-95" style={{background:'linear-gradient(135deg, #fbbf24, #f97316)', color:'white', boxShadow:'0 8px 30px rgba(249,115,22,0.4)'}}>
+                                <button onClick={() => setGameState('setup')} className="w-full py-4 rounded-2xl text-xl font-bold shadow-xl uppercase transition-all duration-200 hover:scale-105 hover:shadow-2xl active:scale-95" style={{background:'linear-gradient(135deg, #fbbf24, #f97316)', color:'white', boxShadow:'0 8px 30px rgba(249,115,22,0.4)'}}>
                                     🎡 {t.startBtn}
+                                </button>
+                                <button onClick={() => setShowLeaderboard(true)} className="w-full mt-3 py-3 rounded-2xl font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all hover:scale-105 active:scale-95">
+                                    🏆 {lang === 'kg' ? 'Рекорддор' : 'Таблица рекордов'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {gameState === 'setup' && (
+                        <div className="menu-bg min-h-screen flex items-center justify-center p-4" style={{background: 'linear-gradient(135deg, #1e1b4b, #4c1d95, #7f1d1d, #1e1b4b)'}}>
+                            <div className="float-orb absolute w-64 h-64 rounded-full top-10 left-10 pointer-events-none" style={{background:'radial-gradient(circle, rgba(251,191,36,0.3), transparent)', animationDuration:'7s'}} />
+                            <div className="float-orb absolute w-48 h-48 rounded-full bottom-20 right-10 pointer-events-none" style={{background:'radial-gradient(circle, rgba(139,92,246,0.3), transparent)', animationDuration:'9s', animationDelay:'2s'}} />
+                            <div className="menu-card bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full text-center border-t-8 border-yellow-400" style={{boxShadow:'0 30px 80px rgba(0,0,0,0.4)'}}>
+                                <div className="text-5xl mb-3">🎮</div>
+                                <h2 className="text-2xl font-black text-gray-800 mb-2">
+                                    {lang === 'kg' ? 'Оюнчулардын саны' : 'Количество игроков'}
+                                </h2>
+
+                                {/* Player count toggle */}
+                                <div className="flex gap-3 mb-6 justify-center">
+                                    <button
+                                        onClick={() => setNumPlayers(1)}
+                                        className={`flex-1 py-3 rounded-2xl font-black text-lg transition-all duration-200 ${numPlayers === 1 ? 'text-white scale-105 shadow-lg' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                        style={numPlayers === 1 ? {background:'linear-gradient(135deg,#4f46e5,#7c3aed)'} : {}}>
+                                        👤 {lang === 'kg' ? '1 Оюнчу' : '1 Игрок'}
+                                    </button>
+                                    <button
+                                        onClick={() => setNumPlayers(2)}
+                                        className={`flex-1 py-3 rounded-2xl font-black text-lg transition-all duration-200 ${numPlayers === 2 ? 'text-white scale-105 shadow-lg' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                        style={numPlayers === 2 ? {background:'linear-gradient(135deg,#059669,#047857)'} : {}}>
+                                        👥 {lang === 'kg' ? '2 Оюнчу' : '2 Игрока'}
+                                    </button>
+                                </div>
+
+                                {/* Player 1 input */}
+                                <div className="mb-4 text-left">
+                                    <label className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-2 block">
+                                        👤 {lang === 'kg' ? '1-Оюнчунун аты' : 'Имя игрока 1'}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={playerNameInput}
+                                        onChange={e => setPlayerNameInput(e.target.value)}
+                                        placeholder={lang === 'kg' ? 'Атыңыз...' : 'Ваше имя...'}
+                                        maxLength={20}
+                                        className="w-full border-2 border-indigo-200 focus:border-indigo-500 outline-none rounded-2xl px-5 py-3 text-lg font-bold text-gray-800 text-center transition-all"
+                                        autoFocus
+                                    />
+                                </div>
+
+                                {/* Player 2 input — only if 2 players selected */}
+                                {numPlayers === 2 && (
+                                    <div className="mb-4 text-left">
+                                        <label className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-2 block">
+                                            👤 {lang === 'kg' ? '2-Оюнчунун аты' : 'Имя игрока 2'}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={player2NameInput}
+                                            onChange={e => setPlayer2NameInput(e.target.value)}
+                                            placeholder={lang === 'kg' ? 'Атыңыз...' : 'Ваше имя...'}
+                                            maxLength={20}
+                                            className="w-full border-2 border-emerald-200 focus:border-emerald-500 outline-none rounded-2xl px-5 py-3 text-lg font-bold text-gray-800 text-center transition-all"
+                                        />
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => {
+                                        const n1 = playerNameInput.trim() || (lang === 'kg' ? 'Оюнчу 1' : 'Игрок 1');
+                                        const n2 = player2NameInput.trim() || (lang === 'kg' ? 'Оюнчу 2' : 'Игрок 2');
+                                        setPlayerName(n1);
+                                        setPlayer2Name(n2);
+                                        startGame();
+                                    }}
+                                    disabled={!playerNameInput.trim() || (numPlayers === 2 && !player2NameInput.trim())}
+                                    className="w-full mt-2 py-4 rounded-2xl text-xl font-bold shadow-xl uppercase transition-all duration-200 hover:scale-105 hover:shadow-2xl active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                                    style={{background:'linear-gradient(135deg, #fbbf24, #f97316)', color:'white', boxShadow:'0 8px 30px rgba(249,115,22,0.4)'}}>
+                                    🎡 {lang === 'kg' ? 'Баштоо!' : 'Начать!'}
+                                </button>
+                                <button onClick={() => setGameState('menu')} className="w-full mt-3 py-3 rounded-2xl font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                                    ← {lang === 'kg' ? 'Артка' : 'Назад'}
                                 </button>
                             </div>
                         </div>
@@ -817,6 +1086,25 @@
                             <div className="end-card bg-white rounded-[2.5rem] p-8 max-w-md w-full text-center relative z-10" style={{boxShadow:'0 40px 100px rgba(0,0,0,0.5)'}}>
                                 <div className={`text-8xl mb-4 inline-block ${gameState === 'win' ? 'trophy-drop' : 'skull-shake'}`}>{gameState === 'win' ? '🏆' : '💀'}</div>
                                 <h1 className={`text-4xl font-black mb-4 ${gameState === 'win' ? 'text-green-600' : 'text-red-600'}`} style={{textShadow: gameState==='win'?'0 2px 20px rgba(16,185,129,0.3)':'0 2px 20px rgba(239,68,68,0.3)'}}>{gameState === 'win' ? t.winGame : t.gameOver}</h1>
+                                {numPlayers === 2 ? (
+                                    <div className="mb-4">
+                                        <div className="text-lg font-black text-gray-700 mb-3">
+                                            🏆 {lang === 'kg' ? 'Жеңүүчү:' : 'Победитель:'} {scores[0] > scores[1] ? playerName : scores[1] > scores[0] ? player2Name : (lang === 'kg' ? 'Тең!' : 'Ничья!')}
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <div className="flex-1 bg-indigo-50 rounded-2xl p-3 border-2 border-indigo-100">
+                                                <div className="text-xs font-bold text-indigo-400 uppercase">👤 {playerName}</div>
+                                                <div className="text-3xl font-black text-indigo-600">{scores[0]}</div>
+                                            </div>
+                                            <div className="flex-1 bg-emerald-50 rounded-2xl p-3 border-2 border-emerald-100">
+                                                <div className="text-xs font-bold text-emerald-500 uppercase">👤 {player2Name}</div>
+                                                <div className="text-3xl font-black text-emerald-600">{scores[1]}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    playerName && <div className="text-lg font-bold text-gray-500 mb-2">👤 {playerName}</div>
+                                )}
                                 <p className="text-gray-500 mb-2 font-medium">{t.wordWas}</p>
                                 <div className="text-3xl font-black text-indigo-900 mb-6 tracking-widest bg-indigo-50 rounded-2xl py-3">{wordsDatabase[currentWordIndex][lang].word}</div>
                                 <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 mb-8 border-2 border-indigo-100">
@@ -865,8 +1153,26 @@
                                             <div className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{t.round}</div>
                                             <div className="text-3xl font-black text-indigo-600">{round} / 3</div>
                                         </div>
+                                        {numPlayers === 2 ? (
+                                            <div className="flex gap-3">
+                                                <div className={`px-4 py-2 rounded-2xl text-center transition-all duration-300 ${currentPlayer === 1 ? 'bg-indigo-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-400'}`}>
+                                                    <div className="text-xs font-bold uppercase tracking-wide">👤 {playerName}</div>
+                                                    <div className="text-2xl font-black">{scores[0]}</div>
+                                                    {currentPlayer === 1 && <div className="text-xs font-bold">▶ {lang === 'kg' ? 'Кезек' : 'Ход'}</div>}
+                                                </div>
+                                                <div className={`px-4 py-2 rounded-2xl text-center transition-all duration-300 ${currentPlayer === 2 ? 'bg-emerald-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-400'}`}>
+                                                    <div className="text-xs font-bold uppercase tracking-wide">👤 {player2Name}</div>
+                                                    <div className="text-2xl font-black">{scores[1]}</div>
+                                                    {currentPlayer === 2 && <div className="text-xs font-bold">▶ {lang === 'kg' ? 'Кезек' : 'Ход'}</div>}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center">
+                                                {playerName && <div className="text-sm font-black text-indigo-400 uppercase tracking-widest">👤 {playerName}</div>}
+                                            </div>
+                                        )}
                                         <div className="text-right">
-                                            <div className="text-4xl font-black text-orange-500" style={{textShadow:'0 2px 10px rgba(249,115,22,0.3)'}}>{score}</div>
+                                            <div className="text-4xl font-black text-orange-500" style={{textShadow:'0 2px 10px rgba(249,115,22,0.3)'}}>{numPlayers === 2 ? scores[currentPlayer-1] : score}</div>
                                             <div className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{t.score}</div>
                                         </div>
                                     </div>
@@ -874,6 +1180,12 @@
                                     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-100 rounded-3xl p-6 mb-8 text-center">
                                         <div className="text-xs font-black text-indigo-300 uppercase mb-1 tracking-widest">{t.category}: {currentData.category}</div>
                                         <div className="text-xl font-bold text-indigo-900 italic">" {currentData.hint} "</div>
+                                        {/* Timer */}
+                                        {timerActive && (
+                                            <div className={`mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full font-black text-lg ${timeLeft <= 10 ? 'bg-red-500 text-white animate-pulse' : 'bg-indigo-100 text-indigo-700'}`}>
+                                                ⏱ {timeLeft}s
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex justify-center gap-2 mb-10 flex-wrap">
@@ -895,6 +1207,14 @@
                                                 className={`btn-spin w-full py-5 rounded-[1.5rem] text-xl font-black shadow-xl ${spinning || wheelValue !== 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'spin-btn-idle text-white'}`}
                                                 style={spinning || wheelValue !== 0 ? {} : {background:'linear-gradient(135deg,#34d399,#059669)', boxShadow:'0 8px 30px rgba(5,150,105,0.4)'}}>
                                                 {spinning ? '🌀 ' + t.spinning : '🎡 ' + t.spinBtn}
+                                            </button>
+
+                                            {/* Hint button */}
+                                            <button onClick={useHint}
+                                                disabled={currentData.word.split('').every(l => guessedLetters.includes(l))}
+                                                className="w-full py-3 rounded-2xl font-black text-base transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed text-white"
+                                                style={{background:'linear-gradient(135deg,#a855f7,#7c3aed)', boxShadow:'0 4px 20px rgba(168,85,247,0.4)'}}>
+                                                ⭐ {lang === 'kg' ? 'Жардам (−200 упай)' : 'Подсказка (−200 очков)'}
                                             </button>
 
                                             <div className={`message-in w-full text-center py-4 rounded-2xl font-black text-lg transition-all duration-300 ${wheelValue > 0 ? 'text-gray-900' : 'bg-gray-100 text-indigo-300'}`}
