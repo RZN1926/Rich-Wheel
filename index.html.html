@@ -551,6 +551,18 @@
             const [avatar1, setAvatar1] = useState('🦅');
             const [avatar2, setAvatar2] = useState('🐺');
             const [coinPopups, setCoinPopups] = useState([]);
+            const [multiplier, setMultiplier] = useState(1);
+            const [selectedCategory, setSelectedCategory] = useState('all');
+            const [showGuessWord, setShowGuessWord] = useState(false);
+            const [guessWordInput, setGuessWordInput] = useState('');
+            const [showQR, setShowQR] = useState(false);
+            const [timedMode, setTimedMode] = useState(false);
+            const [timedScore, setTimedScore] = useState([0, 0]);
+            const [timedWordsCount, setTimedWordsCount] = useState([0, 0]);
+            const [gameTimer, setGameTimer] = useState(120);
+            const [gameTimerActive, setGameTimerActive] = useState(false);
+            const gameTimerRef = useRef(null);
+            const categories = ['all', ...Array.from(new Set(wordsDatabase.map(w => w.kg.category)))];
             const [leaderboard, setLeaderboard] = useState(() => {
                 try { return JSON.parse(localStorage.getItem('bakyt_leaderboard') || '[]'); } catch { return []; }
             });
@@ -604,7 +616,13 @@
 
             const t = translations[lang];
             const currentData = wordsDatabase[currentWordIndex][lang];
-            const wheelSegments = [100, 200, 300, 500, 0, 150, 250, 400, 600, 0, 350, 450];
+            // Values: positive = points, 0 = bankrupt, -2 = x2 multiplier, -3 = x3 multiplier
+            const wheelSegments = [100, 200, -2, 300, 0, 150, 500, -3, 400, 0, 250, 600];
+            const wheelColors = [
+                '#e11d48','#f59e0b','#7c3aed','#dc2626',
+                '#111827','#059669','#2563eb','#f97316',
+                '#111827','#0891b2','#9333ea','#16a34a'
+            ];
             const keyboard = [['А','Б','В','Г','Д','Е','Ё','Ж','З'],['И','Й','К','Л','М','Н','О','Ө','П'],['Р','С','Т','У','Ү','Ф','Х','Ц','Ч'],['Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я','Ң']];
 
             const canvasRef = useRef(null);
@@ -727,43 +745,103 @@
                 const segmentAngle = (2 * Math.PI) / wheelSegments.length;
                 ctx.clearRect(0, 0, 300, 300);
 
+                // Outer glow ring
+                const glowGrad = ctx.createRadialGradient(centerX, centerY, radius - 5, centerX, centerY, radius + 15);
+                glowGrad.addColorStop(0, 'rgba(251,191,36,0.6)');
+                glowGrad.addColorStop(1, 'rgba(251,191,36,0)');
+                ctx.beginPath(); ctx.arc(centerX, centerY, radius + 15, 0, Math.PI * 2);
+                ctx.fillStyle = glowGrad; ctx.fill();
+
                 wheelSegments.forEach((value, i) => {
                     const startAngle = i * segmentAngle + rotation;
                     const endAngle = startAngle + segmentAngle;
+                    const midAngle = startAngle + segmentAngle / 2;
+
+                    // Segment gradient
+                    const baseColor = wheelColors[i];
+                    const gx = centerX + radius * 0.5 * Math.cos(midAngle);
+                    const gy = centerY + radius * 0.5 * Math.sin(midAngle);
+                    const segGrad = ctx.createRadialGradient(gx, gy, 0, centerX, centerY, radius);
+                    segGrad.addColorStop(0, baseColor + 'ff');
+                    segGrad.addColorStop(1, baseColor + 'bb');
+
                     ctx.beginPath(); ctx.moveTo(centerX, centerY);
                     ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                    ctx.fillStyle = value === 0 ? '#1f2937' : (i % 2 === 0 ? '#dc2626' : '#fbbf24');
-                    ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.save(); ctx.translate(centerX, centerY); ctx.rotate(startAngle + segmentAngle / 2);
-                    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Montserrat';
-                    ctx.fillText(value === 0 ? '💀' : value, radius * 0.7, 5); ctx.restore();
+                    ctx.fillStyle = segGrad; ctx.fill();
+
+                    // Segment border
+                    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2; ctx.stroke();
+
+                    // Label
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(midAngle);
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.shadowBlur = 4;
+
+                    if (value === 0) {
+                        ctx.font = 'bold 20px Montserrat';
+                        ctx.fillText('💀', radius * 0.68, 6);
+                    } else if (value === -2) {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 16px Montserrat';
+                        ctx.fillText('x2', radius * 0.65, 3);
+                        ctx.font = 'bold 10px Montserrat';
+                        ctx.fillText('🔥', radius * 0.85, 3);
+                    } else if (value === -3) {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 16px Montserrat';
+                        ctx.fillText('x3', radius * 0.65, 3);
+                        ctx.font = 'bold 10px Montserrat';
+                        ctx.fillText('⚡', radius * 0.85, 3);
+                    } else {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 17px Montserrat';
+                        ctx.fillText(value, radius * 0.68, 6);
+                    }
+                    ctx.restore();
                 });
 
-                // Arrow pointing DOWN into the wheel, sitting above it
+                // Outer rim
+                ctx.beginPath(); ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 4; ctx.stroke();
+
+                // Inner decorative ring
+                ctx.beginPath(); ctx.arc(centerX, centerY, 28, 0, Math.PI * 2);
+                const centerGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 28);
+                centerGrad.addColorStop(0, '#fbbf24');
+                centerGrad.addColorStop(0.5, '#f97316');
+                centerGrad.addColorStop(1, '#dc2626');
+                ctx.fillStyle = centerGrad; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+
+                // Center star
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 20px Montserrat';
+                ctx.textAlign = 'center';
+                ctx.fillText('★', centerX, centerY + 7);
+
+                // Arrow
                 const arrowTipX = centerX;
-                const arrowTipY = centerY - radius + 2; // tip touches wheel edge
+                const arrowTipY = centerY - radius - 2;
                 ctx.save();
-                ctx.shadowColor = 'rgba(0,0,0,0.45)';
-                ctx.shadowBlur = 6;
-                ctx.shadowOffsetY = 2;
-                const grad = ctx.createLinearGradient(arrowTipX, arrowTipY - 28, arrowTipX, arrowTipY);
-                grad.addColorStop(0, '#cc0000');
-                grad.addColorStop(1, '#ff5555');
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 8;
+                const arrowGrad = ctx.createLinearGradient(arrowTipX, arrowTipY, arrowTipX, arrowTipY + 35);
+                arrowGrad.addColorStop(0, '#ff0000');
+                arrowGrad.addColorStop(1, '#ff6666');
                 ctx.beginPath();
-                ctx.moveTo(arrowTipX, arrowTipY);           // tip (bottom, pointing into wheel)
-                ctx.lineTo(arrowTipX + 10, arrowTipY - 16); // right wing
-                ctx.lineTo(arrowTipX + 4, arrowTipY - 14);  // inner right
-                ctx.lineTo(arrowTipX + 4, arrowTipY - 28);  // tail top right
-                ctx.lineTo(arrowTipX - 4, arrowTipY - 28);  // tail top left
-                ctx.lineTo(arrowTipX - 4, arrowTipY - 14);  // inner left
-                ctx.lineTo(arrowTipX - 10, arrowTipY - 16); // left wing
+                ctx.moveTo(arrowTipX, arrowTipY + 2);
+                ctx.lineTo(arrowTipX + 13, arrowTipY + 22);
+                ctx.lineTo(arrowTipX + 5, arrowTipY + 18);
+                ctx.lineTo(arrowTipX + 5, arrowTipY + 36);
+                ctx.lineTo(arrowTipX - 5, arrowTipY + 36);
+                ctx.lineTo(arrowTipX - 5, arrowTipY + 18);
+                ctx.lineTo(arrowTipX - 13, arrowTipY + 22);
                 ctx.closePath();
-                ctx.fillStyle = grad;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
+                ctx.fillStyle = arrowGrad; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
                 ctx.restore();
             };
 
@@ -792,25 +870,61 @@
                         if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
                         const selectedIndex = Math.floor(relativeAngle / segmentAngle) % wheelSegments.length;
                         const value = wheelSegments[selectedIndex];
-                        setWheelValue(value); setSpinning(false);
+                        setSpinning(false);
                         if (value === 0) {
                             playSound('bankrupt');
                             setMessage(t.bankrupt);
+                            setMultiplier(1);
                             setTimeout(() => {
                                 setLives(l => l > 1 ? (setWheelValue(0), setMessage(t.spinBtn), l - 1) : (setGameState('gameover'), 0));
                             }, 2000);
+                        } else if (value === -2) {
+                            setMultiplier(2);
+                            setWheelValue(200);
+                            setMessage(lang === 'kg' ? '🔥 x2 КӨБӨЙТКҮЧ! Тамга тандагыла!' : '🔥 x2 МНОЖИТЕЛЬ! Выбирайте букву!');
+                        } else if (value === -3) {
+                            setMultiplier(3);
+                            setWheelValue(300);
+                            setMessage(lang === 'kg' ? '⚡ x3 СУПЕР КӨБӨЙТКҮЧ!' : '⚡ x3 СУПЕР МНОЖИТЕЛЬ!');
+                        } else {
+                            setMultiplier(1);
+                            setWheelValue(value);
                         }
                     }
                 };
                 animate();
             };
 
-            const startGame = () => {
-                setCurrentWordIndex(Math.floor(Math.random() * wordsDatabase.length));
-                setGuessedLetters([]); setScore(0); setScores([0,0]); setRound(1); setLives(3); setWheelValue(0); setMessage(t.spinBtn); setGameState('playing'); setShowExitConfirm(false); setCurrentPlayer(1);
-                setTimeLeft(30); setTimerActive(false);
-                if (timerRef.current) clearInterval(timerRef.current);
+            const getFilteredWords = () => {
+                if (selectedCategory === 'all') return wordsDatabase;
+                return wordsDatabase.filter(w => w.kg.category === selectedCategory);
             };
+
+            const startGame = () => {
+                const filtered = getFilteredWords();
+                const pick = filtered[Math.floor(Math.random() * filtered.length)];
+                const realIdx = wordsDatabase.indexOf(pick);
+                setCurrentWordIndex(realIdx >= 0 ? realIdx : 0);
+                setGuessedLetters([]); setScore(0); setScores([0,0]); setRound(1); setLives(3);
+                setWheelValue(0); setMessage(t.spinBtn); setGameState('playing');
+                setShowExitConfirm(false); setCurrentPlayer(1);
+                setTimeLeft(30); setTimerActive(false); setMultiplier(1);
+                setTimedScore([0,0]); setTimedWordsCount([0,0]);
+                if (timerRef.current) clearInterval(timerRef.current);
+                if (timedMode) { setGameTimer(120); setGameTimerActive(true); }
+            };
+
+            // 2-minute game timer for timed mode
+            useEffect(() => {
+                if (!gameTimerActive) { if (gameTimerRef.current) clearInterval(gameTimerRef.current); return; }
+                gameTimerRef.current = setInterval(() => {
+                    setGameTimer(prev => {
+                        if (prev <= 1) { clearInterval(gameTimerRef.current); setGameTimerActive(false); setGameState('win'); return 0; }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(gameTimerRef.current);
+            }, [gameTimerActive]);
 
             // Start timer when wheel value is set
             useEffect(() => {
@@ -892,6 +1006,44 @@
                 setTimeout(() => setMessage(wheelValue > 0 ? t.spinBtn : t.spinBtn), 1500);
             };
 
+            const guessWholeWord = (input) => {
+                const word = currentData.word;
+                if (input.toUpperCase() === word) {
+                    playSound('win');
+                    const bonus = 1000 * multiplier;
+                    if (numPlayers === 2) {
+                        setScores(s => { const ns = [...s]; ns[currentPlayer-1] += bonus; return ns; });
+                    } else {
+                        setScore(s => s + bonus);
+                    }
+                    showCoinPopup(bonus);
+                    setGuessedLetters(word.split(''));
+                    setMessage(lang === 'kg' ? `🎉 ТУУРА! +${bonus} упай!` : `🎉 ВЕРНО! +${bonus} очков!`);
+                    setTimeout(() => {
+                        if (round < 3) {
+                            const filtered = getFilteredWords();
+                            const pick = filtered[Math.floor(Math.random() * filtered.length)];
+                            setCurrentWordIndex(wordsDatabase.indexOf(pick));
+                            setRound(r => r + 1);
+                            setGuessedLetters([]); setWheelValue(0); setTimerActive(false); setMultiplier(1);
+                            setMessage(t.winRound);
+                        } else { setGameState('win'); }
+                    }, 2000);
+                } else {
+                    playSound('lose');
+                    setMessage(lang === 'kg' ? '❌ Ката! Бүт сөз туура эмес!' : '❌ Неверно! Слово не совпадает!');
+                    if (numPlayers === 2) {
+                        setCurrentPlayer(p => p === 1 ? 2 : 1);
+                    } else {
+                        setLives(l => l > 1 ? l - 1 : (setGameState('gameover'), 0));
+                    }
+                    setWheelValue(0); setTimerActive(false);
+                    setTimeout(() => setMessage(t.spinBtn), 1800);
+                }
+                setShowGuessWord(false);
+                setGuessWordInput('');
+            };
+
             const guessLetter = (letter) => {
                 if (guessedLetters.includes(letter) || spinning || wheelValue === 0) return;
                 const word = currentData.word;
@@ -901,7 +1053,8 @@
                 if (word.includes(letter)) {
                     playSound('correct');
                     const count = word.split('').filter(l => l === letter).length;
-                    const earned = wheelValue * count;
+                    const earned = wheelValue * count * multiplier;
+                    if (multiplier > 1) setMultiplier(1);
                     if (numPlayers === 2) {
                         setScores(s => { const ns = [...s]; ns[currentPlayer-1] += earned; return ns; });
                     } else {
@@ -1181,6 +1334,34 @@
                                     </div>
                                 )}
 
+                                {/* Category selector */}
+                                <div className="mb-4 text-left">
+                                    <label className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-2 block">
+                                        📚 {lang === 'kg' ? 'Категория' : 'Категория'}
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map(cat => (
+                                            <button key={cat} onClick={() => setSelectedCategory(cat)}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${selectedCategory === cat ? 'text-white shadow-md scale-105' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                                                style={selectedCategory === cat ? {background:'linear-gradient(135deg,#4f46e5,#7c3aed)'} : {}}>
+                                                {cat === 'all' ? (lang === 'kg' ? '🌍 Баары' : '🌍 Все') : cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Timed mode toggle */}
+                                <div className="mb-4 flex items-center justify-between bg-orange-50 rounded-2xl px-5 py-3 border-2 border-orange-100">
+                                    <div>
+                                        <div className="font-black text-gray-800 text-sm">⏰ {lang === 'kg' ? '2 мүнөттүк режим' : 'Режим 2 минуты'}</div>
+                                        <div className="text-xs text-gray-400">{lang === 'kg' ? 'Ким көбүрөөк сөз тапат?' : 'Кто угадает больше слов?'}</div>
+                                    </div>
+                                    <button onClick={() => setTimedMode(m => !m)}
+                                        className={`w-12 h-6 rounded-full transition-all relative ${timedMode ? 'bg-orange-500' : 'bg-gray-300'}`}>
+                                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${timedMode ? 'left-6' : 'left-0.5'}`} />
+                                    </button>
+                                </div>
+
                                 <button
                                     onClick={() => {
                                         const n1 = playerNameInput.trim() || (lang === 'kg' ? 'Оюнчу 1' : 'Игрок 1');
@@ -1359,6 +1540,97 @@
                                                 style={{background:'linear-gradient(135deg,#a855f7,#7c3aed)', boxShadow:'0 4px 20px rgba(168,85,247,0.4)'}}>
                                                 ⭐ {lang === 'kg' ? 'Жардам (−200 упай)' : 'Подсказка (−200 очков)'}
                                             </button>
+
+                                            {/* Guess whole word button */}
+                                            <button onClick={() => setShowGuessWord(true)}
+                                                disabled={spinning}
+                                                className="w-full py-3 rounded-2xl font-black text-base transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-30 text-white"
+                                                style={{background:'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow:'0 4px 20px rgba(245,158,11,0.4)'}}>
+                                                🔤 {lang === 'kg' ? 'Сөздү толук айт (+1000)' : 'Назвать слово (+1000)'}
+                                            </button>
+
+                                            {/* Multiplier indicator */}
+                                            {multiplier > 1 && (
+                                                <div className="w-full text-center py-2 rounded-2xl font-black text-white animate-pulse"
+                                                    style={{background: multiplier === 3 ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : 'linear-gradient(135deg,#f97316,#ef4444)'}}>
+                                                    {multiplier === 2 ? '🔥 x2 МНОЖИТЕЛЬ АКТИВЕН!' : '⚡ x3 СУПЕР МНОЖИТЕЛЬ!'}
+                                                </div>
+                                            )}
+
+                                            {/* Timed mode game timer */}
+                                            {timedMode && gameTimerActive && (
+                                                <div className={`w-full text-center py-2 rounded-2xl font-black text-lg ${gameTimer <= 30 ? 'bg-red-500 text-white animate-pulse' : 'bg-orange-100 text-orange-700'}`}>
+                                                    ⏰ {Math.floor(gameTimer/60)}:{String(gameTimer%60).padStart(2,'0')}
+                                                </div>
+                                            )}
+
+                                            {/* QR button */}
+                                            {numPlayers === 2 && (
+                                                <button onClick={() => setShowQR(true)}
+                                                    className="w-full py-2 rounded-2xl font-bold text-sm text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all">
+                                                    📱 QR {lang === 'kg' ? '2-оюнчуга' : 'для игрока 2'}
+                                                </button>
+                                            )}
+
+                                            {/* Guess word modal */}
+                                            {showGuessWord && (
+                                                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal text-center">
+                                                        <div className="text-4xl mb-3">🔤</div>
+                                                        <h2 className="text-xl font-black text-gray-800 mb-4">
+                                                            {lang === 'kg' ? 'Сөздү толук жаз' : 'Введите слово целиком'}
+                                                        </h2>
+                                                        <input
+                                                            type="text"
+                                                            value={guessWordInput}
+                                                            onChange={e => setGuessWordInput(e.target.value.toUpperCase())}
+                                                            onKeyDown={e => { if (e.key === 'Enter' && guessWordInput.trim()) guessWholeWord(guessWordInput.trim()); }}
+                                                            placeholder={lang === 'kg' ? 'Сөздү жаз...' : 'Введите слово...'}
+                                                            className="w-full border-2 border-indigo-200 focus:border-indigo-500 outline-none rounded-2xl px-5 py-3 text-lg font-black text-gray-800 text-center mb-4 tracking-widest"
+                                                            autoFocus
+                                                        />
+                                                        <div className="flex gap-3">
+                                                            <button onClick={() => { setShowGuessWord(false); setGuessWordInput(''); }}
+                                                                className="flex-1 py-3 bg-gray-100 text-gray-600 font-bold rounded-2xl">
+                                                                {lang === 'kg' ? 'Жок' : 'Отмена'}
+                                                            </button>
+                                                            <button onClick={() => guessWholeWord(guessWordInput.trim())}
+                                                                disabled={!guessWordInput.trim()}
+                                                                className="flex-1 py-3 text-white font-black rounded-2xl disabled:opacity-40"
+                                                                style={{background:'linear-gradient(135deg,#f59e0b,#d97706)'}}>
+                                                                {lang === 'kg' ? 'Айт!' : 'Назвать!'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* QR modal */}
+                                            {showQR && (
+                                                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal text-center">
+                                                        <div className="text-4xl mb-3">📱</div>
+                                                        <h2 className="text-xl font-black text-gray-800 mb-2">
+                                                            {lang === 'kg' ? '2-оюнчу үчүн QR' : 'QR для игрока 2'}
+                                                        </h2>
+                                                        <p className="text-gray-500 text-sm mb-4">
+                                                            {lang === 'kg' ? 'Телефонуң менен скан кыл' : 'Отсканируй телефоном'}
+                                                        </p>
+                                                        <img
+                                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
+                                                            alt="QR Code"
+                                                            className="mx-auto rounded-2xl shadow-lg mb-4"
+                                                            width="200" height="200"
+                                                        />
+                                                        <p className="text-xs text-gray-400 mb-4 break-all">{window.location.href}</p>
+                                                        <button onClick={() => setShowQR(false)}
+                                                            className="w-full py-3 text-white font-black rounded-2xl"
+                                                            style={{background:'linear-gradient(135deg,#4f46e5,#7c3aed)'}}>
+                                                            {lang === 'kg' ? 'Жабуу' : 'Закрыть'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             <div className={`message-in w-full text-center py-4 rounded-2xl font-black text-lg transition-all duration-300 ${wheelValue > 0 ? 'text-gray-900' : 'bg-gray-100 text-indigo-300'}`}
                                                 style={wheelValue > 0 ? {background:'linear-gradient(135deg,#fbbf24,#f59e0b)', boxShadow:'0 4px 20px rgba(251,191,36,0.5)'} : {}}>
