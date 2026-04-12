@@ -511,8 +511,12 @@
             const [timeLeft, setTimeLeft] = useState(30);
             const [timerActive, setTimerActive] = useState(false);
             const [showLeaderboard, setShowLeaderboard] = useState(false);
+            const [showStats, setShowStats] = useState(false);
             const [leaderboard, setLeaderboard] = useState(() => {
                 try { return JSON.parse(localStorage.getItem('bakyt_leaderboard') || '[]'); } catch { return []; }
+            });
+            const [stats, setStats] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('bakyt_stats') || '{"gamesPlayed":0,"wins":0,"totalScore":0,"bestScore":0}'); } catch { return {gamesPlayed:0, wins:0, totalScore:0, bestScore:0}; }
             });
             const timerRef = useRef(null);
 
@@ -800,6 +804,17 @@
                         setLeaderboard(updated);
                         try { localStorage.setItem('bakyt_leaderboard', JSON.stringify(updated)); } catch {}
                     }
+                    // Update stats
+                    setStats(prev => {
+                        const newStats = {
+                            gamesPlayed: prev.gamesPlayed + 1,
+                            wins: prev.wins + (gameState === 'win' ? 1 : 0),
+                            totalScore: prev.totalScore + finalScore,
+                            bestScore: Math.max(prev.bestScore, finalScore)
+                        };
+                        try { localStorage.setItem('bakyt_stats', JSON.stringify(newStats)); } catch {}
+                        return newStats;
+                    });
                 }
             }, [gameState]);
 
@@ -927,7 +942,48 @@
 
                     {gameState === 'menu' && (
                         <div className="menu-bg min-h-screen flex items-center justify-center p-4" style={{background: 'linear-gradient(135deg, #1e1b4b, #4c1d95, #7f1d1d, #1e1b4b)'}}>
-                            {/* Leaderboard modal */}
+                            {/* Stats modal */}
+                            {showStats && (
+                                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal">
+                                        <h2 className="text-2xl font-black text-gray-800 mb-6 text-center">📊 {lang === 'kg' ? 'Статистика' : 'Статистика'}</h2>
+                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                            <div className="bg-indigo-50 rounded-2xl p-4 text-center border-2 border-indigo-100">
+                                                <div className="text-3xl font-black text-indigo-600">{stats.gamesPlayed}</div>
+                                                <div className="text-xs font-bold text-indigo-400 uppercase mt-1">{lang === 'kg' ? 'Оюн' : 'Игр сыграно'}</div>
+                                            </div>
+                                            <div className="bg-emerald-50 rounded-2xl p-4 text-center border-2 border-emerald-100">
+                                                <div className="text-3xl font-black text-emerald-600">{stats.wins}</div>
+                                                <div className="text-xs font-bold text-emerald-400 uppercase mt-1">{lang === 'kg' ? 'Жеңүү' : 'Побед'}</div>
+                                            </div>
+                                            <div className="bg-yellow-50 rounded-2xl p-4 text-center border-2 border-yellow-100">
+                                                <div className="text-3xl font-black text-yellow-600">{stats.bestScore}</div>
+                                                <div className="text-xs font-bold text-yellow-400 uppercase mt-1">{lang === 'kg' ? 'Эң жакшы' : 'Лучший счёт'}</div>
+                                            </div>
+                                            <div className="bg-purple-50 rounded-2xl p-4 text-center border-2 border-purple-100">
+                                                <div className="text-3xl font-black text-purple-600">{stats.gamesPlayed > 0 ? Math.round(stats.totalScore / stats.gamesPlayed) : 0}</div>
+                                                <div className="text-xs font-bold text-purple-400 uppercase mt-1">{lang === 'kg' ? 'Орточо' : 'Среднее'}</div>
+                                            </div>
+                                            <div className="col-span-2 bg-orange-50 rounded-2xl p-4 text-center border-2 border-orange-100">
+                                                <div className="text-3xl font-black text-orange-600">{stats.gamesPlayed > 0 ? Math.round((stats.wins / stats.gamesPlayed) * 100) : 0}%</div>
+                                                <div className="text-xs font-bold text-orange-400 uppercase mt-1">{lang === 'kg' ? 'Жеңүү пайызы' : 'Процент побед'}</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <button onClick={() => {
+                                                const empty = {gamesPlayed:0, wins:0, totalScore:0, bestScore:0};
+                                                setStats(empty);
+                                                try { localStorage.setItem('bakyt_stats', JSON.stringify(empty)); } catch {}
+                                            }} className="flex-1 py-3 bg-red-50 text-red-400 font-bold rounded-2xl hover:bg-red-100 transition-all text-sm">
+                                                🗑 {lang === 'kg' ? 'Тазалоо' : 'Очистить'}
+                                            </button>
+                                            <button onClick={() => setShowStats(false)} className="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all">
+                                                ✓ {lang === 'kg' ? 'Жабуу' : 'Закрыть'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             {showLeaderboard && (
                                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                                     <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full animate-modal">
@@ -986,6 +1042,9 @@
                                 </button>
                                 <button onClick={() => setShowLeaderboard(true)} className="w-full mt-3 py-3 rounded-2xl font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all hover:scale-105 active:scale-95">
                                     🏆 {lang === 'kg' ? 'Рекорддор' : 'Таблица рекордов'}
+                                </button>
+                                <button onClick={() => setShowStats(true)} className="w-full mt-3 py-3 rounded-2xl font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all hover:scale-105 active:scale-95">
+                                    📊 {lang === 'kg' ? 'Статистика' : 'Статистика'}
                                 </button>
                             </div>
                         </div>
